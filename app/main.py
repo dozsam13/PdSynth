@@ -19,12 +19,15 @@ def menu_switch(direction):
 	global current_param_frame_idx
 	global section_frames
 	section_frames[current_param_frame_idx].grid_forget()
+	#TODO: remove keybindings
+	
 	current_param_frame_idx += direction
 	if current_param_frame_idx < 0:
 		current_param_frame_idx = len(section_frames)-1
 		
 	current_param_frame_idx %= len(section_frames)
 	section_frames[current_param_frame_idx].grid(row=1, column=0, padx=10, pady=10)
+	#TODO: add keybindings
 
 
 def bind_menu_keys(root):
