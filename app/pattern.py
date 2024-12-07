@@ -33,7 +33,7 @@ class Pattern:
 			}
 		]
 		self.effect_section = [
-			"Effects"
+			"Effects",
 			{
 				"delay_time": delay_time,
 				"delay_volume": delay_volume,
