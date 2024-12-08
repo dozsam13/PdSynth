@@ -5,35 +5,29 @@ class Pattern:
 		cutoff, resonance, 
 		amp_mod_freq, amp_mod_amnt, freq_mod_freq, freq_mod_amnt,
 		delay_time, delay_volume, delay_feedback, reverb_dry, reverb_wet, reverb_level, reverb_feedback,
-		
+		pd_client
 	):
-		self.main_section = [
-			"Home",
+		self.data = {
+			"Home":
 			{
 				"bpm": bpm,
 				"volume": volume,
 				"slew": slew,
 				"seq_last_step": seq_last_step
-			}
-		]
-		self.filter_section = [
-			"Filters",
+			},
+			"Filters":
 			{
 				"cutoff": cutoff,
 				"resonance": resonance
-			}
-		]
-		self.mod_section = [
-			"Modulation",
+			},
+			"Modulation":
 			{
 				"amp_mod_freq": amp_mod_freq,
 				"amp_mod_amnt": amp_mod_amnt,
 				"freq_mod_freq": freq_mod_freq,
 				"freq_mod_amnt": freq_mod_amnt
-			}
-		]
-		self.effect_section = [
-			"Effects",
+			},
+			"Effects":
 			{
 				"delay_time": delay_time,
 				"delay_volume": delay_volume,
@@ -43,7 +37,10 @@ class Pattern:
 				"reverb_level": reverb_level,
 				"reverb_feedback": reverb_feedback
 			}
-		]
-
-	def get_sections(self):
-		return self.main_section, self.filter_section, self.mod_section, self.effect_section
+		}
+		self.pd_client = pd_client
+	
+	def change_state(self, section, param, change):
+		self.pd_client.set_param(param, self.data[section][param] + change)
+		self.data[section][param] += change
+		
