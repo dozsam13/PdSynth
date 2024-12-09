@@ -26,42 +26,42 @@ class Pattern:
 		attack, decay, sustain_level, sustain_length, release):
 			
 		self.data = {
-		"Home":
-		{
-			"bpm": bpm,
-			"volume": volume,
-			"slew_rate": slew,
-			"seq_last_step": seq_last_step
-		},
-		"Filters":
-		{
-			"cutoff": cutoff,
-			"resonance": resonance
-		},
-		"Modulation":
-		{
-			"amp_mod_freq": amp_mod_freq,
-			"amp_mod_amnt": amp_mod_amnt,
-			"freq_mod_freq": freq_mod_freq,
-			"freq_mod_amnt": freq_mod_amnt
-		},
-		"Effects":
-		{
-			"delay_time": delay_time,
-			"delay_volume": delay_volume,
-			"delay_feedback": delay_feedback,
-			"reverb_dry": reverb_dry,
-			"reverb_wet": reverb_wet,
-			"reverb_level": reverb_level,
-			"reverb_feedback": reverb_feedback
-		},
-		"Envelope":
-		{
-			"attack": attack,
-			"decay": decay,
-			"sustain_level": sustain_level,
-			"sustain_length": sustain_length,
-			"release": release,
+			"Home":
+			{
+				"bpm": bpm,
+				"volume": volume,
+				"slew_rate": slew,
+				"seq_last_step": seq_last_step
+			},
+			"Filters":
+			{
+				"cutoff": cutoff,
+				"resonance": resonance
+			},
+			"Modulation":
+			{
+				"amp_mod_freq": amp_mod_freq,
+				"amp_mod_amnt": amp_mod_amnt,
+				"freq_mod_freq": freq_mod_freq,
+				"freq_mod_amnt": freq_mod_amnt
+			},
+			"Effects":
+			{
+				"delay_time": delay_time,
+				"delay_volume": delay_volume,
+				"delay_feedback": delay_feedback,
+				"reverb_dry": reverb_dry,
+				"reverb_wet": reverb_wet,
+				"reverb_level": reverb_level,
+				"reverb_feedback": reverb_feedback
+			},
+			"Envelope":
+			{
+				"attack": attack,
+				"decay": decay,
+				"sustain_level": sustain_level,
+				"sustain_length": sustain_length,
+				"release": release,
+			}
 		}
-	}
 			

@@ -40,7 +40,7 @@ def menu_switch(direction, encoders, pattern):
 	bind_encoders(encoders, frame_data[0], frame_data[1])
 
 
-def bind_keys(root, encoders, pattern):
+def bind_keys(root, encoders, pattern, pd_client):
 	root.bind("n", lambda x: menu_switch(-1, encoders, pattern))
 	root.bind("m", lambda x: menu_switch(1, encoders, pattern))
 	
@@ -72,6 +72,13 @@ def bind_keys(root, encoders, pattern):
 	
 	root.bind("j", lambda x: encoders[7].state_change(-1))
 	root.bind("k", lambda x: encoders[7].state_change(1))
+	
+	 
+	root.bind("1", lambda x: pd_client.set_param("pitch", 55))
+	root.bind("2", lambda x: pd_client.set_param("pitch", 65))
+	root.bind("3", lambda x: pd_client.set_param("pitch", 75))
+	root.bind("4", lambda x: pd_client.set_param("pitch", 85))
+	
 	
 
 def bind_encoders(encoders, section_name, param_names):
@@ -111,6 +118,6 @@ bind_encoders(encoders, frame_data[0], frame_data[1])
 #main_label.grid(row=0, column=0, pady=10)
 
 
-bind_keys(root, encoders, my_pattern)
+bind_keys(root, encoders, my_pattern, pd_client)
 
 root.mainloop()
