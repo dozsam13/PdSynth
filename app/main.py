@@ -41,8 +41,8 @@ def menu_switch(direction, encoders, pattern):
 
 
 def bind_keys(root, encoders, pattern):
-	root.bind("j", lambda x: menu_switch(-1, encoders, pattern))
-	root.bind("l", lambda x: menu_switch(1, encoders, pattern))
+	root.bind("n", lambda x: menu_switch(-1, encoders, pattern))
+	root.bind("m", lambda x: menu_switch(1, encoders, pattern))
 	
 	#encoder_keylist = "qwertzui"
 	#for i, key in enumerate(encoder_keylist):
@@ -60,6 +60,18 @@ def bind_keys(root, encoders, pattern):
 	
 	root.bind("u", lambda x: encoders[3].state_change(-1))
 	root.bind("i", lambda x: encoders[3].state_change(1))
+	
+	root.bind("a", lambda x: encoders[4].state_change(-1))
+	root.bind("s", lambda x: encoders[4].state_change(1))
+	
+	root.bind("d", lambda x: encoders[5].state_change(-1))
+	root.bind("f", lambda x: encoders[5].state_change(1))
+	
+	root.bind("g", lambda x: encoders[6].state_change(-1))
+	root.bind("h", lambda x: encoders[6].state_change(1))
+	
+	root.bind("j", lambda x: encoders[7].state_change(-1))
+	root.bind("k", lambda x: encoders[7].state_change(1))
 	
 
 def bind_encoders(encoders, section_name, param_names):
@@ -81,7 +93,8 @@ root = tk.Tk()
 root.geometry("1200x500") #You want the size of the app to be 500x500
 #root.resizable(0, 0)
 root.title("PdSynth")
-my_pattern = ViewModel(1,9,2,3,4,1,1,1,1,1,1,1,1,1,1,1,1, pd_client, root)
+ptn = Pattern(1,9,2,3,4,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1)
+my_pattern = ViewModel(pd_client, root, ptn)
 encoders = [Encoder(my_pattern) for _ in range(8)] 
 
 
