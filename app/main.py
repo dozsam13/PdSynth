@@ -40,9 +40,20 @@ def menu_switch(direction, encoders, pattern):
 	bind_encoders(encoders, frame_data[0], frame_data[1])
 
 
-def bind_keys(root, encoders, pattern, pd_client):
-	root.bind("n", lambda x: menu_switch(-1, encoders, pattern))
-	root.bind("m", lambda x: menu_switch(1, encoders, pattern))
+def bind_pitch_keys(pd_client, offset):
+	root.bind("1", lambda x: pd_client.set_param("pitch", offset + 1))
+	root.bind("2", lambda x: pd_client.set_param("pitch", offset + 2))
+	root.bind("3", lambda x: pd_client.set_param("pitch", offset + 3))
+	root.bind("4", lambda x: pd_client.set_param("pitch", offset + 4))
+	root.bind("5", lambda x: pd_client.set_param("pitch", offset + 5))
+	root.bind("6", lambda x: pd_client.set_param("pitch", offset + 6))
+	root.bind("7", lambda x: pd_client.set_param("pitch", offset + 7))
+	root.bind("8", lambda x: pd_client.set_param("pitch", offset + 8))
+
+
+def bind_keys(root, encoders, viewmodel, pd_client):
+	root.bind("n", lambda x: menu_switch(-1, encoders, viewmodel))
+	root.bind("m", lambda x: menu_switch(1, encoders, viewmodel))
 	
 	#encoder_keylist = "qwertzui"
 	#for i, key in enumerate(encoder_keylist):
@@ -73,13 +84,8 @@ def bind_keys(root, encoders, pattern, pd_client):
 	root.bind("j", lambda x: encoders[7].state_change(-1))
 	root.bind("k", lambda x: encoders[7].state_change(1))
 	
-	 
-	root.bind("1", lambda x: pd_client.set_param("pitch", 55))
-	root.bind("2", lambda x: pd_client.set_param("pitch", 65))
-	root.bind("3", lambda x: pd_client.set_param("pitch", 75))
-	root.bind("4", lambda x: pd_client.set_param("pitch", 85))
-	
-	
+	bind_pitch_keys(pd_client, 50)
+
 
 def bind_encoders(encoders, section_name, param_names):
 	bind_len = len(encoders) if len(encoders) < len(param_names) else len(param_names)
@@ -97,20 +103,19 @@ def unbind_encoders(encoders):
 
 pd_client = PdClient()
 root = tk.Tk()
-root.geometry("1200x500") #You want the size of the app to be 500x500
-#root.resizable(0, 0)
+root.geometry("1200x500")
 root.title("PdSynth")
 ptn = Pattern(1,9,2,3,4,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1)
-my_pattern = ViewModel(pd_client, root, ptn)
+viewmodel = ViewModel(pd_client, root, ptn)
 encoders = [Encoder(my_pattern) for _ in range(8)] 
 
 
 section_frames = []
-for section_name, section_data in my_pattern.data.items():
+for section_name, section_data in viewmodel.data.items():
 	section_frames.append(build_section(section_name, section_data))
 
 section_frames[current_param_frame_idx].grid(row=1, column=0, padx=10, pady=10)
-frame_data = list(my_pattern.data.items())[current_param_frame_idx]
+frame_data = list(viewmodel.data.items())[current_param_frame_idx]
 bind_encoders(encoders, frame_data[0], frame_data[1])
 
 
@@ -118,6 +123,6 @@ bind_encoders(encoders, frame_data[0], frame_data[1])
 #main_label.grid(row=0, column=0, pady=10)
 
 
-bind_keys(root, encoders, my_pattern, pd_client)
+bind_keys(root, encoders, viewmodel, pd_client)
 
 root.mainloop()
