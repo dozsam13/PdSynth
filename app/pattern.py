@@ -1,25 +1,28 @@
 import tkinter as tk
 
 class ViewModel:
-	def __init__(self, pd_client, root, pattern):
+	def __init__(self, engine_client, root, pattern):
 		
 		data = {}
 		for section_name in pattern.data:
 			data[section_name] = {}
 			for param_name in pattern.data[section_name]:
-				data[section_name][param_name] = tk.StringVar(root, str(pattern.data[section_name][param_name]))
+				if param_name != "name":
+					data[section_name][param_name] = tk.StringVar(root, str(pattern.data[section_name][param_name]))
+				else:
+					self.pattern_name = tk.StringVar(root, str(pattern.data[section_name][param_name]))
 				
 		self.data = data
-		self.pd_client = pd_client
+		self.engine_client = engine_client
 	
 	def change_state(self, section, param, change):
 		new_value = int(self.data[section][param].get()) + change
-		self.pd_client.set_param(param, new_value)
+		self.engine_client.set_param(param, new_value)
 		self.data[section][param].set(str(new_value))
 
 class Pattern:
 	def __init__(self,
-		bpm, volume, slew, seq_last_step,
+		name, bpm, volume, slew, seq_last_step,
 		cutoff, resonance, 
 		amp_mod_freq, amp_mod_amnt, freq_mod_freq, freq_mod_amnt,
 		delay_time, delay_volume, delay_feedback, reverb_dry, reverb_wet, reverb_level, reverb_feedback,
@@ -28,6 +31,7 @@ class Pattern:
 		self.data = {
 			"Home":
 			{
+				"name": name,
 				"bpm": bpm,
 				"volume": volume,
 				"slew_rate": slew,
