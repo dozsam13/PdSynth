@@ -1,24 +1,39 @@
 import tkinter as tk
 
 class ViewModel:
-	def __init__(self, engine_client, root, pattern):
+	def __init__(self, engine_client, root, patterns, current_pattern_idx):
 		
 		data = {}
+		pattern = patterns[current_pattern_idx]
 		for section_name in pattern.data:
 			data[section_name] = {}
 			for param_name in pattern.data[section_name]:
-				if param_name != "name":
-					data[section_name][param_name] = tk.StringVar(root, str(pattern.data[section_name][param_name]))
-				else:
-					self.pattern_name = tk.StringVar(root, str(pattern.data[section_name][param_name]))
-				
+				data[section_name][param_name] = tk.StringVar(root, str(pattern.data[section_name][param_name]))
+		
+		self.patterns = patterns
+		self.current_pattern_idx = current_pattern_idx		
 		self.data = data
 		self.engine_client = engine_client
 	
 	def change_state(self, section, param, change):
-		new_value = int(self.data[section][param].get()) + change
-		self.engine_client.set_param(param, new_value)
-		self.data[section][param].set(str(new_value))
+		if section == "Home" and param == "name":
+			self.current_pattern_idx += change
+			self.current_pattern_idx %= len(self.patterns)
+			self.load_pattern()
+		else:
+			new_value = int(self.data[section][param].get()) + change
+			self.engine_client.set_param(param, new_value)
+			self.data[section][param].set(str(new_value))
+
+	def load_pattern(self):
+		pattern = self.patterns[self.current_pattern_idx]
+		for section_name in pattern.data:
+			for param_name in pattern.data[section_name]:
+				new_value = str(pattern.data[section_name][param_name])
+				self.engine_client.set_param(param_name, new_value)
+				print(section_name, param_name, new_value)
+				self.data[section_name][param_name].set(str(new_value))
+
 
 class Pattern:
 	def __init__(self,

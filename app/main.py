@@ -32,7 +32,7 @@ def build_pattern_section(root, ptns):
 	label1.grid(row=int(i/4)+1, column=i%4*2, padx=5, pady=5)
 	label2 = tk.Label(frame, textvariable=e[1], bg="red", width=15, height=2)
 	label2.grid(row=int(i/4)+1, column=i%4*2+1, padx=5, pady=5)
-	
+
 	return frame
 
 def menu_switch(direction, encoders, viewmodel):
@@ -104,10 +104,10 @@ def main():
 
 
 	ptns = read_patterns()
-	viewmodel = ViewModel(engine_client, root, ptns[current_pattern_idx])
+	viewmodel = ViewModel(engine_client, root, ptns, current_pattern_idx)
 	encoders = [Encoder(viewmodel) for _ in range(8)] 
 
-	section_frames = [build_pattern_section(root)]
+	section_frames = []
 	for section_name, section_data in viewmodel.data.items():
 		section_frames.append(build_section(root, section_name, section_data))
 
