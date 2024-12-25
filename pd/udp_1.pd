@@ -109,14 +109,17 @@
 #X obj 254 570 receive volume;
 #N canvas 268 197 1366 685 seq 1;
 #X floatatom 244 53 5 0 0 0 - - - 0;
-#X obj 201 84 tgl 19 0 empty empty empty 0 -10 0 12 #fcfcfc #000000 #000000 0 1;
-#X obj 205 171 bng 19 250 50 0 empty empty empty 0 -10 0 12 #fcfcfc #000000 #000000;
+#X obj 201 84 tgl 19 0 empty empty empty 0 -10 0 12 #fcfcfc #000000
+#000000 0 1;
+#X obj 205 171 bng 19 250 50 0 empty empty empty 0 -10 0 12 #fcfcfc
+#000000 #000000;
 #X msg 243 84 tempo \$1 permin;
 #X obj 204 214 f, f 4;
 #X obj 205 446 mtof;
 #X floatatom 197 495 5 0 0 0 - - - 0;
 #X obj 573 476 array set \$0-pitches;
-#X obj 206 302 hradio 16 1 0 16 empty empty empty 0 -10 0 12 #fcfcfc #000000 #000000 0;
+#X obj 206 302 hradio 16 1 0 16 empty empty empty 0 -10 0 12 #fcfcfc
+#000000 #000000 0;
 #X obj 210 342 array get \$0-pitches;
 #X floatatom 211 398 5 0 0 0 - - - 0;
 #X msg 571 432 68 59 54 58 48 68 59 54 58 48 68 59 54 58 48 60;
@@ -128,19 +131,25 @@
 #X obj 971 35 midirealtimein;
 #X floatatom 971 59 5 0 0 0 - - - 0;
 #X obj 966 178 select 0;
-#X obj 971 350 bng 15 70 50 0 empty empty pulse 17 7 0 10 #fcfcfc #000000 #000000;
+#X obj 971 350 bng 15 70 50 0 empty empty pulse 17 7 0 10 #fcfcfc #000000
+#000000;
 #X obj 962 89 select 248 250 252;
-#X obj 1006 209 bng 15 70 50 0 empty empty play 17 7 0 10 #fcfcfc #000000 #000000;
-#X obj 1041 233 bng 15 70 50 0 empty empty stop 17 7 0 10 #fcfcfc #000000 #000000;
+#X obj 1006 209 bng 15 70 50 0 empty empty play 17 7 0 10 #fcfcfc #000000
+#000000;
+#X obj 1041 233 bng 15 70 50 0 empty empty stop 17 7 0 10 #fcfcfc #000000
+#000000;
 #X floatatom 1165 119 5 0 0 0 BAR - - 0;
-#X text 775 10 select is used as a filter to isolate the needed MIDI info;
+#X text 775 10 select is used as a filter to isolate the needed MIDI
+info;
 #X obj 972 119 counter 0 0 5;
-#X obj 738 203 tgl 19 0 empty empty empty 0 -10 0 12 #fcfcfc #000000 #000000 0 1;
+#X obj 738 203 tgl 19 0 empty empty empty 0 -10 0 12 #fcfcfc #000000
+#000000 0 1;
 #X floatatom 738 227 5 0 0 0 - - - 0;
 #X obj 256 215 +;
 #X obj 160 241 * \$1;
 #X obj 881 67 print;
-#X obj 395 433 bng 20 250 50 0 empty empty empty 0 -10 0 12 #fcfcfc #000000 #000000;
+#X obj 395 433 bng 20 250 50 0 empty empty empty 0 -10 0 12 #fcfcfc
+#000000 #000000;
 #X floatatom 461 445 5 0 0 0 - - - 0;
 #X obj 399 368 t b f;
 #X obj 412 399 select 0;
@@ -190,49 +199,103 @@
 #X obj 96 143 line~;
 #X msg 95 108 \$1 \$2;
 #X obj 97 78 pack;
-#N canvas 0 64 1920 984 perf 1;
-#X obj 43 41 tgl 19 0 seq_start_stop seq_start_stop_udp Start_Stop 0 -10 0 12 #fcfcfc #000000 #000000 0 1;
-#X obj 129 44 vsl 19 120 0 300 0 0 bpm bpm_udp BPM 0 -9 0 12 #00ff04 #000000 #000000 0 1;
+#N canvas 0 64 1850 984 perf 1;
+#X obj 43 41 tgl 19 0 seq_start_stop seq_start_stop_udp Start_Stop
+0 -10 0 12 #fcfcfc #000000 #000000 0 1;
+#X obj 132 44 vsl 19 120 0 300 0 0 bpm bpm_udp BPM 0 -9 0 12 #00ff04
+#000000 #000000 0 1;
 #X floatatom 128 182 5 0 0 0 - - - 0;
-#X obj 201 43 vsl 19 120 0 1 0 0 volume volume_udp Volume 0 -9 0 12 #00ff04 #000000 #000000 0 1;
-#X obj 777 45 vsl 19 120 0 1200 0 0 pitch pitch_udp Pitch 0 -9 0 12 #00ff04 #000000 #000000 0 1;
+#X obj 201 43 vsl 19 120 0 1 0 0 volume volume_udp Volume 0 -9 0 12
+#00ff04 #000000 #000000 0 1;
+#X obj 777 45 vsl 19 120 0 1200 0 0 pitch pitch_udp Pitch 0 -9 0 12
+#00ff04 #000000 #000000 0 1;
 #N canvas 78 78 450 250 (subpatch) 0;
 #X array \$0-pitches 16 float 3;
 #A 0 68 66.5 0 58 48 0 59 54 58 48 68 59 54 58 48 60;
 #X coords 0 0 16 100 200 140 1 0 0;
 #X restore 827 41 graph;
-#X obj 280 45 vsl 19 120 0 150 0 0 slew_rate slew_rate_udp Slew 0 -9 0 12 #00ff04 #000000 #000000 0 1;
-#X obj 253 283 vsl 19 120 0 200 0 0 amp_mod_freq amp_mod_freq_udp Frequency 0 -9 0 12 #00ff04 #000000 #000000 0 1;
-#X obj 327 283 vsl 19 120 0 2 0 0 amp_mod_amnt amp_mod_amnt_udp Amount 0 -9 0 12 #00ff04 #000000 #000000 0 1;
+#X obj 280 45 vsl 19 120 0 150 0 0 slew_rate slew_rate_udp Slew 0 -9
+0 12 #00ff04 #000000 #000000 0 1;
+#X obj 253 283 vsl 19 120 0 200 0 0 amp_mod_freq amp_mod_freq_udp Frequency
+0 -9 0 12 #00ff04 #000000 #000000 0 1;
+#X obj 327 283 vsl 19 120 0 2 0 0 amp_mod_amnt amp_mod_amnt_udp Amount
+0 -9 0 12 #00ff04 #000000 #000000 0 1;
 #X text 248 236 Amp Mod:;
-#X obj 400 277 vsl 19 120 0 1000 0 0 freq_mod_freq freq_mod_freq_udp Frequency 0 -9 0 12 #00ff04 #000000 #000000 0 1;
-#X obj 479 281 vsl 19 120 0 1 0 0 freq_mod_amnt freq_mod_amnt_udp Amount 0 -9 0 12 #00ff04 #000000 #000000 0 1;
-#X obj 342 48 vsl 19 120 0 16 0 0 seq_last_step seq_last_step_udp Seq\ Last\ Step 0 -9 0 12 #00ff04 #000000 #000000 0 1;
-#X obj 15 261 vsl 19 120 0 3000 0 0 cutoff cutoff_udp Cutoff 0 -9 0 12 #00ff04 #000000 #000000 0 1;
-#X obj 97 262 vsl 19 120 0 6 0 0 resonance resonance_udp Resonance 0 -9 0 12 #00ff04 #000000 #000000 0 1;
+#X obj 400 277 vsl 19 120 0 1000 0 0 freq_mod_freq freq_mod_freq_udp
+Frequency 0 -9 0 12 #00ff04 #000000 #000000 0 1;
+#X obj 479 281 vsl 19 120 0 1 0 0 freq_mod_amnt freq_mod_amnt_udp Amount
+0 -9 0 12 #00ff04 #000000 #000000 0 1;
+#X obj 342 48 vsl 19 120 0 16 0 0 seq_last_step seq_last_step_udp Seq\\\ Last\\\ Step
+0 -9 0 12 #00ff04 #000000 #000000 0 1;
+#X obj 21 258 vsl 19 120 0 3000 0 0 cutoff cutoff_udp Cutoff 0 -9 0
+12 #00ff04 #000000 #000000 0 1;
+#X obj 97 262 vsl 19 120 0 6 0 0 resonance resonance_udp Resonance
+0 -9 0 12 #00ff04 #000000 #000000 0 1;
 #N canvas 0 50 450 250 (subpatch) 0;
 #X array waveformarray 200 float 5;
-#A 0 -0.975278 -0.969346 -0.963413 -0.957481 -0.951548 -0.945615 -0.939683 -0.93375 -0.927818 -0.921885 -0.915953 -0.91002 -0.904088 -0.898155 -0.892222 -0.88629 -0.880357 -0.874425 -0.868492 -0.86256 -0.856627 -0.850695 -0.844762 -0.83883 -0.832897 -0.826964 -0.821032 -0.815099 -0.809167 -0.803234 -0.797302 -0.791369 -0.785437 -0.779504 -0.773571 -0.767639 -0.761706 -0.755774 -0.749841 -0.743909 -0.737976 -0.732044 -0.726111 -0.720178 -0.714246 -0.708313 -0.702381 -0.696448 -0.690516 -0.684583 -0.678651 -0.672718 -0.666785 -0.660853 -0.65492 -0.648988 -0.643055 -0.637123 -0.63119 -0.625258 -0.619325 -0.613392 -0.60746 -0.601527 -0.595595 -0.589662 -0.58373 -0.577797 -0.571865 -0.565932 -0.559999 -0.554067 -0.548134 -0.542202 -0.536269 -0.530337 -0.524404 -0.518472 -0.512539 -0.506607 -0.500674 -0.494741 -0.488809 -0.482876 -0.476944 -0.471011 -0.465079 -0.459146 -0.453214 -0.447281 -0.441348 -0.435416 -0.429483 -0.423551 -0.417618 -0.411686 -0.405753 -0.399821 -0.393888 -0.387955 -0.382023 -0.37609 -0.370158 -0.364225 -0.358293 -0.35236 -0.346428 -0.340495 -0.334562 -0.32863 -0.322697 -0.316765 -0.310832 -0.3049 -0.298967 -0.293035 -0.287102 -0.28117 -0.275237 -0.269304 -0.263372 -0.257439 -0.251507 -0.245574 -0.239642 -0.233709 -0.227777 -0.221844 -0.215911 -0.209979 -0.204046 -0.198114 -0.192181 -0.186249 -0.180316 -0.174384 -0.168451 -0.162519 -0.156586 -0.150653 -0.144721 -0.138788 -0.132856 -0.126923 -0.120991 -0.115058 -0.109125 -0.103193 -0.0972604 -0.0913278 -0.0853953 -0.0794627 -0.0735302 -0.0675976 -0.0616651 -0.0557325 -0.0498 -0.0438674 -0.0379348 -0.0320023 -0.0260698 -0.0201372 -0.0142047 -0.00827211 -0.00233954 0.00359297 0.00952554 0.0154581 0.0213907 0.0273232 0.0332558 0.0391883 0.0451208 0.0510534 0.056986 0.0629185 0.0688511 0.0747837 0.0807161 0.0866487 0.0925813 0.0985138 0.104446 0.110379 0.116312 0.122244 0.128177 0.134109 0.140042 0.145974 0.151907 0.157839 0.163772 0.169704 0.175637 0.18157 0.187502 0.193435 0.199367 0.2053;
+#A 0 -0.975278 -0.969346 -0.963413 -0.957481 -0.951548 -0.945615 -0.939683
+-0.93375 -0.927818 -0.921885 -0.915953 -0.91002 -0.904088 -0.898155
+-0.892222 -0.88629 -0.880357 -0.874425 -0.868492 -0.86256 -0.856627
+-0.850695 -0.844762 -0.83883 -0.832897 -0.826964 -0.821032 -0.815099
+-0.809167 -0.803234 -0.797302 -0.791369 -0.785437 -0.779504 -0.773571
+-0.767639 -0.761706 -0.755774 -0.749841 -0.743909 -0.737976 -0.732044
+-0.726111 -0.720178 -0.714246 -0.708313 -0.702381 -0.696448 -0.690516
+-0.684583 -0.678651 -0.672718 -0.666785 -0.660853 -0.65492 -0.648988
+-0.643055 -0.637123 -0.63119 -0.625258 -0.619325 -0.613392 -0.60746
+-0.601527 -0.595595 -0.589662 -0.58373 -0.577797 -0.571865 -0.565932
+-0.559999 -0.554067 -0.548134 -0.542202 -0.536269 -0.530337 -0.524404
+-0.518472 -0.512539 -0.506607 -0.500674 -0.494741 -0.488809 -0.482876
+-0.476944 -0.471011 -0.465079 -0.459146 -0.453214 -0.447281 -0.441348
+-0.435416 -0.429483 -0.423551 -0.417618 -0.411686 -0.405753 -0.399821
+-0.393888 -0.387955 -0.382023 -0.37609 -0.370158 -0.364225 -0.358293
+-0.35236 -0.346428 -0.340495 -0.334562 -0.32863 -0.322697 -0.316765
+-0.310832 -0.3049 -0.298967 -0.293035 -0.287102 -0.28117 -0.275237
+-0.269304 -0.263372 -0.257439 -0.251507 -0.245574 -0.239642 -0.233709
+-0.227777 -0.221844 -0.215911 -0.209979 -0.204046 -0.198114 -0.192181
+-0.186249 -0.180316 -0.174384 -0.168451 -0.162519 -0.156586 -0.150653
+-0.144721 -0.138788 -0.132856 -0.126923 -0.120991 -0.115058 -0.109125
+-0.103193 -0.0972604 -0.0913278 -0.0853953 -0.0794627 -0.0735302 -0.0675976
+-0.0616651 -0.0557325 -0.0498 -0.0438674 -0.0379348 -0.0320023 -0.0260698
+-0.0201372 -0.0142047 -0.00827211 -0.00233954 0.00359297 0.00952554
+0.0154581 0.0213907 0.0273232 0.0332558 0.0391883 0.0451208 0.0510534
+0.056986 0.0629185 0.0688511 0.0747837 0.0807161 0.0866487 0.0925813
+0.0985138 0.104446 0.110379 0.116312 0.122244 0.128177 0.134109 0.140042
+0.145974 0.151907 0.157839 0.163772 0.169704 0.175637 0.18157 0.187502
+0.193435 0.199367 0.2053;
 #X coords 0 2 199 -2 200 140 1 0 0;
 #X restore 819 220 graph;
 #X text 392 235 Freq Mod:;
-#X obj 224 501 vsl 19 120 0 1 0 0 reverb_dry reverb_dry_udp Dry 0 -9 0 12 #00ff04 #000000 #000000 0 1;
+#X obj 224 501 vsl 19 120 0 1 0 0 reverb_dry reverb_dry_udp Dry 0 -9
+0 12 #00ff04 #000000 #000000 0 1;
 #X text 216 455 Reverb:;
-#X obj 261 497 vsl 19 120 0 1 0 0 reverb_wet reverb_wet_udp Wet 0 -9 0 12 #00ff04 #000000 #000000 0 1;
-#X obj 298 502 vsl 19 120 0 100 0 0 reverb_level reverb_level_udp Level 0 -9 0 12 #00ff04 #000000 #000000 0 1;
-#X obj 345 502 vsl 19 120 0 200 0 0 reverb_feedback reverb_feedback_udp Feedback 0 -9 0 12 #00ff04 #000000 #000000 0 1;
-#X obj 403 506 vsl 19 120 0 7000 0 0 reverb_crossover_freq reverb_crossover_freq_udp CrossFreq 0 -9 0 12 #00ff04 #000000 #000000 0 1;
-#X obj 468 506 vsl 19 120 0 100 0 0 reverb_h_f_d_p reverb_h_f_d_p_udp HFDP 0 -9 0 12 #00ff04 #000000 #000000 0 1;
+#X obj 261 497 vsl 19 120 0 1 0 0 reverb_wet reverb_wet_udp Wet 0 -9
+0 12 #00ff04 #000000 #000000 0 1;
+#X obj 298 502 vsl 19 120 0 100 0 0 reverb_level reverb_level_udp Level
+0 -9 0 12 #00ff04 #000000 #000000 0 1;
+#X obj 345 502 vsl 19 120 0 200 0 0 reverb_feedback reverb_feedback_udp
+Feedback 0 -9 0 12 #00ff04 #000000 #000000 0 1;
+#X obj 403 506 vsl 19 120 0 7000 0 0 reverb_crossover_freq reverb_crossover_freq_udp
+CrossFreq 0 -9 0 12 #00ff04 #000000 #000000 0 1;
+#X obj 468 506 vsl 19 120 0 100 0 0 reverb_h_f_d_p reverb_h_f_d_p_udp
+HFDP 0 -9 0 12 #00ff04 #000000 #000000 0 1;
 #X text 15 436 Delay:;
-#X obj 24 491 vsl 19 120 0 4000 0 0 delay_time delay_time_udp Time 0 -9 0 12 #00ff04 #000000 #000000 0 1;
-#X obj 80 487 vsl 19 120 0 0.3 0 0 delay_volume delay_volume_udp Volume 0 -9 0 12 #00ff04 #000000 #000000 0 1;
-#X obj 137 492 vsl 19 120 0 1.3 0 0 delay_feedback delay_feedback_udp Feedback 0 -9 0 12 #00ff04 #000000 #000000 0 1;
+#X obj 24 491 vsl 19 120 0 4000 0 0 delay_time delay_time_udp Time
+0 -9 0 12 #00ff04 #000000 #000000 0 1;
+#X obj 80 487 vsl 19 120 0 0.3 0 0 delay_volume delay_volume_udp Volume
+0 -9 0 12 #00ff04 #000000 #000000 0 1;
+#X obj 137 492 vsl 19 120 0 1.3 0 0 delay_feedback delay_feedback_udp
+Feedback 0 -9 0 12 #00ff04 #000000 #000000 0 1;
 #X text 608 459 Envelope:;
-#X obj 617 496 vsl 19 120 1 600 0 0 attack attack_udp Attack 0 -9 0 12 #00ff04 #000000 #000000 0 1;
-#X obj 677 495 vsl 19 120 1 1200 0 0 decay decay_udp Decay 0 -9 0 12 #00ff04 #000000 #000000 0 1;
-#X obj 735 498 vsl 19 120 0.01 1 0 0 sustain_level sustain_level_udp SustainLevel 0 -9 0 12 #00ff04 #000000 #000000 0 1;
-#X obj 829 495 vsl 19 120 1 1200 0 0 sustain_length sustain_length_udp SustainLength 0 -9 0 12 #00ff04 #000000 #000000 0 1;
-#X obj 937 499 vsl 19 120 1 1200 0 0 release release_udp Release 0 -9 0 12 #00ff04 #000000 #000000 0 1;
+#X obj 617 496 vsl 19 120 1 600 0 0 attack attack_udp Attack 0 -9 0
+12 #00ff04 #000000 #000000 0 1;
+#X obj 677 495 vsl 19 120 1 1200 0 0 decay decay_udp Decay 0 -9 0 12
+#00ff04 #000000 #000000 0 1;
+#X obj 735 498 vsl 19 120 0.01 1 0 0 sustain_level sustain_level_udp
+SustainLevel 0 -9 0 12 #00ff04 #000000 #000000 0 1;
+#X obj 829 495 vsl 19 120 1 1200 0 0 sustain_length sustain_length_udp
+SustainLength 0 -9 0 12 #00ff04 #000000 #000000 0 1;
+#X obj 937 499 vsl 19 120 1 1200 0 0 release release_udp Release 0
+-9 0 12 #00ff04 #000000 #000000 0 1;
 #X text 132 9 Main;
 #X text 9 217 Filter;
 #X text 252 211 Mod;
@@ -242,8 +305,10 @@
 #X obj 134 43 receive slew_rate;
 #X obj 263 401 bp~, f 5;
 #X obj 6 202 tabwrite~ waveformarray;
-#X obj 6 144 bng 19 250 50 0 empty empty empty 0 -10 0 12 #fcfcfc #000000 #000000;
-#X obj 28 60 tgl 19 0 empty empty empty 0 -10 0 12 #fcfcfc #000000 #000000 0 1;
+#X obj 6 144 bng 19 250 50 0 empty empty empty 0 -10 0 12 #fcfcfc #000000
+#000000;
+#X obj 28 60 tgl 19 0 empty empty empty 0 -10 0 12 #fcfcfc #000000
+#000000 0 1;
 #X obj 43 336 *~;
 #N canvas 674 182 1366 685 amp_mod 1;
 #X obj 294 203 osc~;
@@ -317,7 +382,8 @@
 #X obj 370 131 expr~ if($v1 > 0 \, 1 \, -1);
 #X obj 374 65 osc~;
 #X obj 97 120 osc~;
-#X obj 215 254 hradio 19 1 0 3 empty empty empty 0 -10 0 12 #fcfcfc #000000 #000000 0;
+#X obj 215 254 hradio 19 1 0 3 empty empty empty 0 -10 0 12 #fcfcfc
+#000000 #000000 0;
 #X obj 203 308 == 0;
 #X obj 286 310 == 1;
 #X obj 94 163 *~;
@@ -348,7 +414,8 @@
 #X obj 74 556 outlet~;
 #X obj 112 34 receive freq;
 #X obj 110 419 vline~;
-#X obj 168 76 bng 19 250 50 0 empty empty empty 0 -10 0 12 #fcfcfc #000000 #000000;
+#X obj 168 76 bng 19 250 50 0 empty empty empty 0 -10 0 12 #fcfcfc
+#000000 #000000;
 #X obj 502 491 r decay;
 #X obj 884 495 r release;
 #X obj 458 542 v decay_value;
@@ -370,7 +437,8 @@
 #X obj 723 496 r sustain_length;
 #X msg 205 333 1 \$1 0 \, \$3 \$2 \$1 \, 0 \$5 \$4;
 #X obj 308 267 expr release_value;
-#X obj 311 220 expr sustain_length_value + attack_value + decay_value;
+#X obj 311 220 expr sustain_length_value + attack_value + decay_value
+;
 #X obj 76 449 *~;
 #X connect 0 0 27 0;
 #X connect 2 0 4 0;
