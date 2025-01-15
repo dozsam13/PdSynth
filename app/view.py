@@ -67,16 +67,37 @@ class View:
 			
 			self.root.bind(str(key), make_lambda(self.encoders, i, amnt))
 
-
+		self.root.bind("0", lambda x: self.change_keyboard_state())
 		self.bind_pitch_keys()
+		
 
+	def change_keyboard_state(self):
+		self.viewmodel.keyboard_state = (self.viewmodel.keyboard_state+1) % 2
+		print(self.viewmodel.keyboard_state)
+		if self.viewmodel.keyboard_state == 0:
+			self.unbind_keys()
+			self.bind_pitch_keys()
+		else:
+			self.unbind_keys()
+			self.bind_seq_keys()
+
+	def bind_seq_keys(self):
+		for i in range(1,9):
+			def make_lambda(i):
+				return lambda x: self.viewmodel.seq_step(i)
+			self.root.bind(str(i), make_lambda(i))
+
+	def unbind_keys(self):
+		for i in range(1,9):
+			def make_lambda(i):
+				return lambda x: self.viewmodel.seq_step(i)
+			self.root.unbind(str(i))
 
 	def bind_pitch_keys(self):
 		for i in range(1,9):
 			def make_lambda(i):
 				return lambda x: self.viewmodel.play_pitch(i)
 			self.root.bind(str(i), make_lambda(i))
-
 
 	def bind_encoders(self, section_name, param_names):
 		bind_len = len(self.encoders) if len(self.encoders) < len(param_names) else len(param_names)

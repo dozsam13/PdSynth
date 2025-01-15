@@ -18,6 +18,7 @@ class ViewModel:
 		self.data = data
 		self.engine_client = engine_client
 		self.pitch_offset = 50
+		self.keyboard_state = 0
 
 	
 	def change_state(self, section, param, change):
@@ -46,3 +47,6 @@ class ViewModel:
 
 	def play_pitch(self, i):
 		self.engine_client.set_param("pitch", self.pitch_offset + i)
+
+	def seq_step(self, i):
+		print("step seq pushed", i)
