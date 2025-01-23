@@ -10,7 +10,6 @@ class Pattern:
 		self.data = {
 			"Home":
 			{
-				"name": name,
 				"bpm": bpm,
 				"volume": volume,
 				"slew_rate": slew,

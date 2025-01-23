@@ -1,7 +1,7 @@
 [
     {
+        "Name": "p1",
         "Home": {
-            "name": "Pattern1",
             "bpm": 100,
             "volume": 9,
             "slew_rate": 2,
@@ -39,8 +39,8 @@
         }
     },
     {
+        "Name" : "p2",
         "Home": {
-            "name": "Pattern2",
             "bpm": 200,
             "volume": 9,
             "slew_rate": 2,
