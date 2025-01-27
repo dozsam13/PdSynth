@@ -3,6 +3,7 @@ from pattern import Pattern
 from pynput import keyboard
 from pynput.keyboard import Key
 from encoder import Encoder
+from lcd import LCDScreen
 
 short_names = {
     "Home":
@@ -44,6 +45,8 @@ short_names = {
                 "release": "rel",
             },
 }
+
+lcd_screen = LCDScreen()
 
 def read_patterns():
     with open('app/patterns.json', 'r') as file:
@@ -110,7 +113,9 @@ def create_scenes(pattern):
 
 
 def render_gui():
-    print(scenes[current_scene_idx].text())
+    t = scenes[current_scene_idx].text()
+    lcd_screen.write_lines([t])
+    print(t)
 
 current_scene_idx = 0
 
