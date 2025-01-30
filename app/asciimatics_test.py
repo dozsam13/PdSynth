@@ -1,10 +1,8 @@
 import json
 from pattern import Pattern
-from pynput import keyboard
-from pynput.keyboard import Key
 from encoder import Encoder
-from lcd import LCDScreen
-
+from my_lcd_screen import LCDScreen
+import keyboard
 short_names = {
     "Home":
             {
@@ -67,11 +65,17 @@ class Scene:
         self.data = {k : DataObject(k, v, name) for k,v in data.items()}
 
     def text(self):
-        result = ""
+        result = [[], []]
         for k, d_obj in self.data.items():
-            result += d_obj.text() + " "
+            value, value_text = d_obj.text()
+            result[0].append(value)
+            result[1].append(value_text)
+        values = " ".join(result[0])
+        texts = " ".join(result[1])
 
-        return result
+        final_text = [values[:16], texts[:16], values[16:], texts[16:]]
+
+        return final_text
         
 
 
@@ -83,9 +87,9 @@ class DataObject:
 
     def text(self):
         v = str(self.value)
-        if len(v) < 2:
-            v = " " + v
-        return short_names[self.scene][self.name] + ":" + v
+        if len(v) < 3:
+            v = "{:<3}".format(v)
+        return v, short_names[self.scene][self.name]
 
     def change_state(self, amnt):
         self.value += amnt
@@ -96,12 +100,10 @@ class DataObject:
 class ViewModel:
     def __init__(self, scenes):
         self.scenes = scenes
-        self.current_scene_idx = 0
 
     def change_state(self, param, amnt):
-        self.scenes[self.current_scene_idx].data[param].change_state(amnt)
+        self.scenes[current_scene_idx].data[param].change_state(amnt)
 
-import keyboard
 
 
 def create_scenes(pattern):
@@ -114,8 +116,11 @@ def create_scenes(pattern):
 
 def render_gui():
     t = scenes[current_scene_idx].text()
-    lcd_screen.write_lines([t])
-    print(t)
+    lcd_screen.write_lines(t)
+    print(t[0])
+    print(t[1])
+    print(t[2])
+    print(t[3])
 
 current_scene_idx = 0
 
@@ -149,6 +154,7 @@ scenes = create_scenes(patterns[0])
 view_model = ViewModel(scenes)
 encoders = [Encoder(view_model), Encoder(view_model), Encoder(view_model), Encoder(view_model), Encoder(view_model), Encoder(view_model), Encoder(view_model), Encoder(view_model)]
 
+
 keyboard.add_hotkey('n', lambda: change_scene(-1))
 keyboard.add_hotkey('m', lambda: change_scene(1))
 keyboard.add_hotkey('q', lambda: encoders[0].state_change(-1))
@@ -160,15 +166,10 @@ keyboard.add_hotkey('z', lambda: encoders[2].state_change(1))
 keyboard.add_hotkey('u', lambda: encoders[3].state_change(-1))
 keyboard.add_hotkey('i', lambda: encoders[3].state_change(1))
 
+
+
 bind_encoders()
-
-print(encoders[0].section, encoders[0].param)
-print(encoders[1].section, encoders[1].param)
-print(encoders[2].section, encoders[2].param)
-print(encoders[3].section, encoders[3].param)
-
-for scene in scenes:
-    print(scene.text())
+render_gui()
 while True:
     pass
 

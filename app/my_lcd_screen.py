@@ -12,8 +12,9 @@ class LCDScreen:
 
   def write_lines(self, lines):
     for i, line in enumerate(lines):
-      lcd.cursor_pos = (i, 0)
-      lcd.write_string(line[:20])
+      self.screen.cursor_pos = (i, 0)
+      self.screen.write_string(line[:20])
+
 
 
 def write_to_lcd(lcd, framebuffer, num_cols):
@@ -22,7 +23,7 @@ def write_to_lcd(lcd, framebuffer, num_cols):
         for row in framebuffer:
             lcd.write_string(row.ljust(num_cols)[:num_cols])
             lcd.write_string('\r\n')
-def long_text(text):
+def long_text(text, lcd, framebuffer):
         if len(text)<20:
             lcd.write_string(text)            
         for i in range(len(text) - 20 + 1):
@@ -159,7 +160,7 @@ def main():
       lcd.write_string(B_F_Ch)
       sleep(1)    
       lcd.cursor_pos = (1, 0)
-      long_text('This is a Scrolling text')   
+      long_text('This is a Scrolling text', lcd, framebuffer)   
   #     lcd.cursor_pos = (3, 19)
   #     lcd.write_string(U_L_Ch)
   #     sleep(.6)
