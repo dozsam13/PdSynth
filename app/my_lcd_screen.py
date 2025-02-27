@@ -3,7 +3,7 @@
 # from RPLCD import RPLCD
 from RPLCD import *
 from time import sleep
-from RPLCD.i2c import CharLCD
+from RPLCD.i2c import CharLCD, BaseCharLCD
 
 
 class LCDScreen:
