@@ -172,52 +172,11 @@ keyboard.add_hotkey('i', lambda: encoders[3].state_change(1))
 bind_encoders()
 render_gui()
 i2cbus = lcd_screen.screen.bus
-from smbus import SMBus
-#i2cbus = SMBus(1)
-#i2caddress = 0X3F
+i2caddress = 0x26
 
-
-res = ''
-def dec_to_bin(n):
-    if n > 1:  # recursively divide the number
-        dec_to_bin(n // 2)
-    global res
-    res += str(n % 2)
-
-IODIRA = 0x00  # IO direction A - 1= input 0 = output
-IODIRB = 0x01  # IO direction B - 1= input 0 = output    
-IPOLA = 0x02  # Input polarity A
-IPOLB = 0x03  # Input polarity B
-GPINTENA = 0x04  # Interrupt-onchange A
-GPINTENB = 0x05  # Interrupt-onchange B
-DEFVALA = 0x06  # Default value for port A
-DEFVALB = 0x07  # Default value for port B
-INTCONA = 0x08  # Interrupt control register for port A
-INTCONB = 0x09  # Interrupt control register for port B
-IOCON = 0x0A  # Configuration register
-GPPUA = 0x0C  # Pull-up resistors for port A
-GPPUB = 0x0D  # Pull-up resistors for port B
-INTFA = 0x0E  # Interrupt condition for port A
-INTFB = 0x0F  # Interrupt condition for port B
-INTCAPA = 0x10  # Interrupt capture for port A
-INTCAPB = 0x11  # Interrupt capture for port B
-GPIOA = 0x12  # Data port A
-GPIOB = 0x13  # Data port B
-OLATA = 0x14  # Output latches A
-OLATB = 0x15  # Output latches B
-i2caddress = 0x3F
-i2cbus.write_byte_data(i2caddress, IOCON, 0x02)  # Update configuration register
-i2cbus.write_word_data(i2caddress, IODIRA, 0xFF00)  # Set Port 
 while True:
     res = ''
     #for  i in range(256):
-    portb = i2cbus.read_byte_data(i2caddress, GPIOB)
-    print(portb)
-    time.sleep(1)
-    '''
-    portb = i2cbus.read_byte_data(0x3F, 0b0000000)
-    print(portb)
-    
-    portb = i2cbus.read_byte_data(0x3F, 0x16)
-    print(portb)
- '''
+    portb = i2cbus.read_byte_data(i2caddress,0xFF)
+    print(bin(portb))
+    time.sleep(0.1)
