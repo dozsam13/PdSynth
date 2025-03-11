@@ -1,12 +1,18 @@
-import RPi.GPIO as GPIO
-print(GPIO.__name__)
-print(dir(GPIO))
 import json
 from pattern import Pattern
 from my_encoder import Encoder
-from my_lcd_screen import LCDScreen
+
 import keyboard
 import time
+from enum import Enum
+
+
+RPI_CONTROLLER = False
+
+if RPI_CONTROLLER:
+    from my_lcd_screen import LCDScreen
+    import RPi.GPIO as GPIO
+
 short_names = {
     "Home":
             {
@@ -48,10 +54,11 @@ short_names = {
             },
 }
 
-lcd_screen = LCDScreen()
+if RPI_CONTROLLER:
+    lcd_screen = LCDScreen()
 
 def read_patterns():
-    with open('patterns.json', 'r') as file:
+    with open('patterns/patterns.json', 'r') as file:
         data = json.load(file)
     patterns = []
     for pattern_data in data:
@@ -120,7 +127,8 @@ def create_scenes(pattern):
 
 def render_gui():
     t = scenes[current_scene_idx].text()
-    lcd_screen.write_lines(t)
+    if RPI_CONTROLLER:
+        lcd_screen.write_lines(t)
     print(t[0])
     print(t[1])
     print(t[2])
@@ -174,9 +182,10 @@ keyboard.add_hotkey('i', lambda: encoders[3].state_change(1))
 
 bind_encoders()
 render_gui()
-i2cbus = lcd_screen.screen.bus
-l_extender_adress = 0x26
-r_extender_adress = 0x25
+if RPI_CONTROLLER:
+    i2cbus = lcd_screen.screen.bus
+    l_extender_adress = 0x26
+    r_extender_adress = 0x25
 
 def button_pressed_callback(a):
     print("INTERRUPT RECEIVED", flush=True)
@@ -186,16 +195,8 @@ def button_pressed_callback(a):
     print(bin(l_extender), flush=True)
     print(bin(r_extender), flush=True)
 
-BUTTON_GPIO = 21
-GPIO.setmode(GPIO.BCM)
-GPIO.setup(BUTTON_GPIO, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-GPIO.add_event_detect(BUTTON_GPIO, GPIO.FALLING, callback=button_pressed_callback, bouncetime=100)
-
-while True:
-    res = ''
-    #for  i in range(256):
-    l_extender = i2cbus.read_byte_data(l_extender_adress,0xFF)
-    r_extender = i2cbus.read_byte_data(r_extender_adress,0xFF)
-    print(bin(l_extender), flush=True)
-    print(bin(r_extender), flush=True)
-    time.sleep(0.1)
+if RPI_CONTROLLER:
+    BUTTON_GPIO = 21
+    GPIO.setmode(GPIO.BCM)
+    GPIO.setup(BUTTON_GPIO, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    GPIO.add_event_detect(BUTTON_GPIO, GPIO.FALLING, callback=button_pressed_callback, bouncetime=100)
