@@ -12,10 +12,18 @@ import RPi.GPIO as GPIO
 import time
 
 # Pin numbers on Raspberry Pi
-CLK_PIN = 7   # GPIO7 connected to the rotary encoder's CLK pin
-DT_PIN = 8    # GPIO8 connected to the rotary encoder's DT pin
-SW_PIN = 25   # GPIO25 connected to the rotary encoder's SW pin
+#TOP RIGHT elso 
+#CLK_PIN = 12   # GPIO7 connected to the rotary encoder's CLK pin
+#DT_PIN = 20    # GPIO8 connected to the rotary encoder's DT pin
+#SW_PIN = 16   # GPIO25 connected to the rotary encoder's SW pin
 
+#12 20
+#26 19
+#13 6
+#25 5
+CLK_PIN = 13   # GPIO7 connected to the rotary encoder's CLK pin
+DT_PIN = 6   # GPIO8 connected to the rotary encoder's DT pin
+SW_PIN = 16 
 DIRECTION_CW = 0
 DIRECTION_CCW = 1
 
