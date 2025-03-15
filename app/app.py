@@ -200,3 +200,7 @@ if RPI_CONTROLLER:
     GPIO.setmode(GPIO.BCM)
     GPIO.setup(BUTTON_GPIO, GPIO.IN, pull_up_down=GPIO.PUD_UP)
     GPIO.add_event_detect(BUTTON_GPIO, GPIO.FALLING, callback=button_pressed_callback, bouncetime=100)
+
+#env = EnvGen.kr(Env.new, doneAction:2);
+while True:
+    pass
