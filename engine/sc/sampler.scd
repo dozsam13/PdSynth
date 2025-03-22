@@ -45,6 +45,6 @@ t.schedAbs(t.nextBar, {~postBear.value});
 )
 ~amp1 = 0.5;
 (
-~player = ~p1.play(t, quant:1/2);
+~player = ~p1.play(t, quant:2);
 )
 ~player.stop;
