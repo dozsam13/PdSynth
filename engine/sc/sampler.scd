@@ -35,13 +35,13 @@ SynthDef.new(\sampy, {
 	);
 	Out.ar(\out.kr(0), sig*env*\amp.kr(1));
 }).add;
-)
+);
 
 (
 t = TempoClock.new(200/60).permanent_(true);
 ~postBeat = {t.beats.postln;1;};
 t.schedAbs(t.nextBar, {~postBear.value});
-)
+);
 //t.beats.postln;
 //t.stop;
 
@@ -63,7 +63,7 @@ t.schedAbs(t.nextBar, {~postBear.value});
 	~paramDict.put(("rate_" ++ track_id).asSymbol, Pseq([1.0], 1));
 	~paramDict.put(("freq_" ++ track_id).asSymbol, Pseq([100, \, \, \], 1));
 });
-)
+);
 
 
 (
@@ -104,8 +104,7 @@ t.schedAbs(t.nextBar, {~postBear.value});
 		\freq, Pn(Plazy({~paramDict[("freq_" ++ track_id).asSymbol]}), inf)
 	);
 
-}
-)
+});
 
 (
 OSCdef(\start_seq, { |msg|
@@ -128,7 +127,7 @@ OSCdef(\bpm, { |msg|
 OSCdef(\volume, { |msg|
 	s.volume.volume = if(msg[1] > 1) {1} {msg[1]};
 }, "/volume");
-)
+);
 
 /*
 (
