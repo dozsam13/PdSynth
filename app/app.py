@@ -1,7 +1,7 @@
 import json
 from pattern import Pattern
 from my_encoder import Encoder
-
+from client.sc_client import SuperColliderClient
 import keyboard
 import time
 from enum import Enum
@@ -9,50 +9,22 @@ from enum import Enum
 
 RPI_CONTROLLER = False
 
+sc_client = SuperColliderClient()
 if RPI_CONTROLLER:
     from my_lcd_screen import LCDScreen
     import RPi.GPIO as GPIO
 
 short_names = {
     "Home":
-            {
-                "name": "nm",
-                "bpm": "bpm",
-                "volume": "vlm",
-                "slew_rate": "slw",
-                "seq_last_step": "sls"
-            },
-            "Filters":
-            {
-                "cutoff": "ctf",
-                "resonance": "rsn"
-            },
-            "Modulation":
-            {
-                "amp_mod_freq": "amf",
-                "amp_mod_amnt": "ama",
-                "freq_mod_freq": "fmf",
-                "freq_mod_amnt": "fma"
-            },
-            "Effects":
-            {
-                "delay_time": "dlt",
-                "delay_volume": "dlv",
-                "delay_feedback": "dlf",
-                "reverb_dry": "rvd",
-                "reverb_wet": "rvw",
-                "reverb_level": "rvl",
-                "reverb_feedback": "rvf"
-            },
-            "Envelope":
-            {
-                "attack": "atk",
-                "decay": "dcy",
-                "sustain_level": "slv",
-                "sustain_length": "sle",
-                "release": "rel",
-            },
+    {
+        "amp": "amp",
+        "bufnum": "buf",
+        "rate": "rte"
+    }
 }
+
+current_track = "1"
+current_scene_idx = 0
 
 if RPI_CONTROLLER:
     lcd_screen = LCDScreen()
@@ -86,8 +58,7 @@ class Scene:
 
         final_text = [values[:16], texts[:16], values[16:], texts[16:]]
 
-        return final_text
-        
+        return final_text   
 
 
 class DataObject:
@@ -104,8 +75,8 @@ class DataObject:
 
     def change_state(self, amnt):
         self.value += amnt
+        sc_client.set_param("/" + self.name + "_" + current_track, self.value)
         render_gui()
-
 
 
 class ViewModel:
@@ -113,20 +84,22 @@ class ViewModel:
         self.scenes = scenes
 
     def change_state(self, param, amnt):
-        self.scenes[current_scene_idx].data[param].change_state(amnt)
+        self.scenes[current_track][current_scene_idx].data[param].change_state(amnt)
 
 
 
-def create_scenes(pattern):
-    scenes = []
-    for scene_name, scene_data in pattern.data.items():
+def create_scenes(ptn):
+    result = {}
+    for trk_id, pattern in ptn.items():
+        scenes = []
+        for scene_name, scene_data in pattern.items():
             if scene_name not in {"Name", "Sequence"}:
                 scenes.append(Scene(scene_name, scene_data))
-    return scenes
-
+        result[trk_id] = scenes
+    return result
 
 def render_gui():
-    t = scenes[current_scene_idx].text()
+    t = scenes[current_track][current_scene_idx].text()
     if RPI_CONTROLLER:
         lcd_screen.write_lines(t)
     print(t[0])
@@ -134,13 +107,18 @@ def render_gui():
     print(t[2])
     print(t[3])
 
-current_scene_idx = 0
+def change_track(trk):
+    global current_track
+    current_track = str(trk)
+    print("Track changed to: ", current_track)
+    change_scene(0)
 
 def change_scene(amnt):
     global current_scene_idx
+    global current_track
     unbind_encoders()
     current_scene_idx += amnt
-    current_scene_idx %= len(scenes)
+    current_scene_idx %= len(scenes[current_track])
     bind_encoders()
     render_gui()
 
@@ -154,18 +132,22 @@ def bind_encoders():
     global current_scene_idx
     global scenes
     global encoders
-
-    l = min([len(encoders), len(list(scenes[current_scene_idx].data.items()))])
+    global current_track
+    print(len(list(scenes[current_track][current_scene_idx].data.items())))
+    l = min([len(encoders), len(list(scenes[current_track][current_scene_idx].data.items()))])
     for i in range(l):
-        encoders[i].section = scenes[current_scene_idx].name
-        encoders[i].param = list(scenes[current_scene_idx].data.items())[i][0]
+        encoders[i].section = scenes[current_track][current_scene_idx].name
+        encoders[i].param = list(scenes[current_track][current_scene_idx].data.items())[i][0]
+
 
 
 patterns = read_patterns()
-scenes = create_scenes(patterns[0])
+scenes = create_scenes(patterns[0].data)
 view_model = ViewModel(scenes)
 encoders = [Encoder(view_model), Encoder(view_model), Encoder(view_model), Encoder(view_model), Encoder(view_model), Encoder(view_model), Encoder(view_model), Encoder(view_model)]
 
+keyboard.add_hotkey('x', lambda: change_track(1))
+keyboard.add_hotkey('c', lambda: change_track(2))
 
 keyboard.add_hotkey('n', lambda: change_scene(-1))
 keyboard.add_hotkey('m', lambda: change_scene(1))

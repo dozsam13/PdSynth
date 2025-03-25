@@ -10,4 +10,4 @@ class Encoder:
 		if self.param is not None and self.section is not None:
 			self.view_model.change_state(self.param, change)
 		else:
-			self.logger.warning("Unbound encoder!")
+			print("Warning! Unbound encoder!")
