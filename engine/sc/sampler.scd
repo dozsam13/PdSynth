@@ -1,20 +1,8 @@
 s.boot;
+s.doWhenBooted({
 ~bs = SoundFile.collectIntoBuffers("/home/dozsam13/dev/PdSynth/samples/emx-sample-pack-50tube/*");
-~bs[0].path;
-~bs[0].bufnum;
-0.exit;
+~bs[0].path.postln;
 
-/*
-(
-var sample_datas;
-var app_osc_client;
-
-sample_datas = ~bs.collect({|b| [b.path.basename, b.bufnum]});
-app_osc_client = NetAddr.new("127.0.0.1", 57121);
-sample_datas.asString.postln;
-app_osc_client.sendMsg("/test", sample_datas.asString);
-)
-*/
 (
 SynthDef.new(\sampy, {
 	var sig, env;
@@ -42,9 +30,6 @@ t = TempoClock.new(200/60).permanent_(true);
 ~postBeat = {t.beats.postln;1;};
 t.schedAbs(t.nextBar, {~postBear.value});
 );
-//t.beats.postln;
-//t.stop;
-
 
 (
 ~track_ids = [1, 2];
@@ -64,8 +49,6 @@ t.schedAbs(t.nextBar, {~postBear.value});
 	~paramDict.put(("freq_" ++ track_id).asSymbol, Pseq([100, \, \, \], 1));
 });
 );
-
-
 (
 ~patterns = ~track_ids.collect{
 	arg track_id;
@@ -129,33 +112,4 @@ OSCdef(\volume, { |msg|
 }, "/volume");
 );
 
-/*
-(
-~plr1 = ~patterns[0].play(t);
-~plr2 = ~patterns[1].play(t);
-)
-
-(
-~plr1.stop;
-~plr2.stop;
-)
-
-~paramDict[\freq_1] = Pseq([100, \, \, \], 1);
-~paramDict[\freq_2] = Pseq([\, \, 100, \], 1);
-
-~paramDict[\amp_1] = 1.0;
-~paramDict[\amp_2] = 0.7;
-~paramDict[\rate_1] = Pseq([1.0], 1);
-~paramDict[\rate_2] = Pseq([1.0], 1);
-~paramDict[\freq_1] = Pseq([0, \, \, \], 1);
-~patterns.size.postln;
-
-
-~paramDict.put(\amp_2, 1.0);
-~paramDict.put(\bufnum_2, ~bs[63].bufnum);
-~paramDict.put(\rate_2, Pseq([1.0], 1));
-~paramDict.put(\freq_2, Pseq([\, \, 100, \], 1));
-
-
-s.freeAll;
-*/
+})
