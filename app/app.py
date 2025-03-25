@@ -110,7 +110,6 @@ def render_gui():
 def change_track(trk):
     global current_track
     current_track = str(trk)
-    print("Track changed to: ", current_track)
     change_scene(0)
 
 def change_scene(amnt):
@@ -146,6 +145,17 @@ scenes = create_scenes(patterns[0].data)
 view_model = ViewModel(scenes)
 encoders = [Encoder(view_model), Encoder(view_model), Encoder(view_model), Encoder(view_model), Encoder(view_model), Encoder(view_model), Encoder(view_model), Encoder(view_model)]
 
+seq_running = False
+def seq_start_stop():
+    global seq_running
+    if not seq_running:
+        sc_client.start_sequencer()
+    else :
+        sc_client.stop_sequencer()
+    seq_running = not seq_running
+    print("space pressed")
+
+keyboard.add_hotkey('space', seq_start_stop)
 keyboard.add_hotkey('x', lambda: change_track(1))
 keyboard.add_hotkey('c', lambda: change_track(2))
 
@@ -160,6 +170,16 @@ keyboard.add_hotkey('z', lambda: encoders[2].state_change(1))
 keyboard.add_hotkey('u', lambda: encoders[3].state_change(-1))
 keyboard.add_hotkey('i', lambda: encoders[3].state_change(1))
 
+## bind sequencer keyboard keys
+def on_seq_press(event):
+    seq_keys = ['0', '1', '2', '3', '4', '5', '6', '7', 'a', 's', 'd', 'f', 'g', 'h', 'j', 'k']
+    if event.name in seq_keys:
+        seq_index = seq_keys.index(event.name)
+        patterns[0].data[current_track]["Sequence"]["freq"][seq_index] = int(not patterns[0].data[current_track]["Sequence"]["freq"][seq_index])
+        print(patterns[0].data[current_track]["Sequence"]["freq"])
+        sc_client.set_param("/freq_" + current_track, list(map(lambda x: x if x==1 else "", patterns[0].data[current_track]["Sequence"]["freq"])))
+
+keyboard.on_press(on_seq_press)
 
 
 bind_encoders()
@@ -183,6 +203,6 @@ if RPI_CONTROLLER:
     GPIO.setup(BUTTON_GPIO, GPIO.IN, pull_up_down=GPIO.PUD_UP)
     GPIO.add_event_detect(BUTTON_GPIO, GPIO.FALLING, callback=button_pressed_callback, bouncetime=100)
 
-#env = EnvGen.kr(Env.new, doneAction:2);
+
 while True:
     pass

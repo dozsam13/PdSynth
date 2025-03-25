@@ -95,6 +95,7 @@ t.stop;
 	OSCdef(("freq_" ++ track_id).asSymbol, { |msg|
 		var seq, s2;
 		seq = msg.drop(1);
+		seq.postln;
 		~paramDict[("freq_" ++ track_id).asSymbol] = Pseq(seq, 1);
 	}, "/freq_" ++ track_id);
 
@@ -111,8 +112,7 @@ t.stop;
 
 }
 )
-~paramDict[\freq_1] = Pseq([100, \, \, \], 1);
-~paramDict[\freq_2] = Pseq([\, \, 100, \], 1);
+
 (
 OSCdef(\start_seq, { |msg|
 	~players = ~patterns.collect({ |ptn|
@@ -136,10 +136,19 @@ OSCdef(\volume, { |msg|
 }, "/volume");
 )
 
+
 (
 ~plr1 = ~patterns[0].play(t);
 ~plr2 = ~patterns[1].play(t);
 )
+
+(
+~plr1.stop;
+~plr2.stop;
+)
+
+~paramDict[\freq_1] = Pseq([100, \, \, \], 1);
+~paramDict[\freq_2] = Pseq([\, \, 100, \], 1);
 
 ~paramDict[\amp_1] = 1.0;
 ~paramDict[\amp_2] = 0.7;
@@ -148,8 +157,5 @@ OSCdef(\volume, { |msg|
 ~paramDict[\freq_1] = Pseq([0, \, \, \], 1);
 ~patterns.size.postln;
 
-(
-~plr1.stop;
-~plr2.stop;
-)
+
 s.freeAll;
