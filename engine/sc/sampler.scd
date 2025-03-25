@@ -1,8 +1,8 @@
 s.boot;
-~bs = SoundFile.collectIntoBuffers("C:/dev/PdSynth/samples/emx-sample-pack-50tube/*");
+~bs = SoundFile.collectIntoBuffers("/home/dozsam13/dev/PdSynth/samples/emx-sample-pack-50tube/*");
 ~bs[0].path;
 ~bs[0].bufnum;
-
+0.exit;
 
 /*
 (
@@ -42,8 +42,8 @@ t = TempoClock.new(200/60).permanent_(true);
 ~postBeat = {t.beats.postln;1;};
 t.schedAbs(t.nextBar, {~postBear.value});
 )
-t.beats.postln;
-t.stop;
+//t.beats.postln;
+//t.stop;
 
 
 (
@@ -63,12 +63,6 @@ t.stop;
 	~paramDict.put(("rate_" ++ track_id).asSymbol, Pseq([1.0], 1));
 	~paramDict.put(("freq_" ++ track_id).asSymbol, Pseq([100, \, \, \], 1));
 });
-/*
-~paramDict.put(\amp_2, 1.0);
-~paramDict.put(\bufnum_2, ~bs[63].bufnum);
-~paramDict.put(\rate_2, Pseq([1.0], 1));
-~paramDict.put(\freq_2, Pseq([\, \, 100, \], 1));
-*/
 )
 
 
@@ -136,7 +130,7 @@ OSCdef(\volume, { |msg|
 }, "/volume");
 )
 
-
+/*
 (
 ~plr1 = ~patterns[0].play(t);
 ~plr2 = ~patterns[1].play(t);
@@ -158,4 +152,11 @@ OSCdef(\volume, { |msg|
 ~patterns.size.postln;
 
 
+~paramDict.put(\amp_2, 1.0);
+~paramDict.put(\bufnum_2, ~bs[63].bufnum);
+~paramDict.put(\rate_2, Pseq([1.0], 1));
+~paramDict.put(\freq_2, Pseq([\, \, 100, \], 1));
+
+
 s.freeAll;
+*/
