@@ -7,7 +7,7 @@ import time
 from enum import Enum
 
 
-RPI_CONTROLLER = False
+RPI_CONTROLLER = True
 
 sc_client = SuperColliderClient()
 if RPI_CONTROLLER:
@@ -23,6 +23,18 @@ short_names = {
     }
 }
 
+button_map = [,,,,0]
+
+buttton_map = {
+    "4" : 0,
+    "1' : 1,
+    "3" : 2,
+    "5" : 3,
+    
+    
+    
+    
+}
 current_track = "1"
 current_scene_idx = 0
 
