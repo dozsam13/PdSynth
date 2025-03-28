@@ -23,18 +23,31 @@ short_names = {
     }
 }
 
-button_map = [,,,,0]
+#button_map = [,,,,0]
 
-buttton_map = {
-    "4" : 0,
-    "1' : 1,
-    "3" : 2,
-    "5" : 3,
-    
-    
-    
-    
+button_map = {
+    "left_extender": {
+        247: 0,
+        191: 1,
+        239: 2,
+        251: 3,
+        127: 8,
+        223: 9,
+        253: 10,
+        254: 11
+    },
+    "right_extender": {
+        254: 4,
+        239: 5,
+        191: 6,
+        247: 7,
+        251: 12,
+        253: 13,
+        223: 14,
+        127: 15
+    }
 }
+
 current_track = "1"
 current_scene_idx = 0
 
@@ -182,14 +195,18 @@ keyboard.add_hotkey('z', lambda: encoders[2].state_change(1))
 keyboard.add_hotkey('u', lambda: encoders[3].state_change(-1))
 keyboard.add_hotkey('i', lambda: encoders[3].state_change(1))
 
+
+def seq_pressed(idx):
+    patterns[0].data[current_track]["Sequence"]["freq"][idx] = int(not patterns[0].data[current_track]["Sequence"]["freq"][idx])
+    print(patterns[0].data[current_track]["Sequence"]["freq"])
+    sc_client.set_param("/freq_" + current_track, list(map(lambda x: x if x==1 else "", patterns[0].data[current_track]["Sequence"]["freq"])))
+
 ## bind sequencer keyboard keys
 def on_seq_press(event):
     seq_keys = ['0', '1', '2', '3', '4', '5', '6', '7', 'a', 's', 'd', 'f', 'g', 'h', 'j', 'k']
     if event.name in seq_keys:
         seq_index = seq_keys.index(event.name)
-        patterns[0].data[current_track]["Sequence"]["freq"][seq_index] = int(not patterns[0].data[current_track]["Sequence"]["freq"][seq_index])
-        print(patterns[0].data[current_track]["Sequence"]["freq"])
-        sc_client.set_param("/freq_" + current_track, list(map(lambda x: x if x==1 else "", patterns[0].data[current_track]["Sequence"]["freq"])))
+        seq_pressed(seq_index)
 
 keyboard.on_press(on_seq_press)
 
@@ -201,19 +218,42 @@ if RPI_CONTROLLER:
     l_extender_adress = 0x26
     r_extender_adress = 0x25
 
+interrupt_counter = 0
 def button_pressed_callback(a):
-    print("INTERRUPT RECEIVED", flush=True)
-    print(a)
+    global interrupt_counter
+    interrupt_counter += 1
+    
+    #print("INTERRUPT RECEIVED", flush=True)
+    #print(a)
     l_extender = i2cbus.read_byte_data(l_extender_adress,0xFF)
     r_extender = i2cbus.read_byte_data(r_extender_adress,0xFF)
-    print(bin(l_extender), flush=True)
-    print(bin(r_extender), flush=True)
+    #print(bin(l_extender), flush=True)
+    #print(bin(r_extender), flush=True)
+    l_extender_bin = str(bin(l_extender))[2:]
+    r_extender_bin = str(bin(r_extender))[2:]
+    
+    #print(interrupt_counter, " ", l_extender_bin, " ", r_extender_bin)  
+    
+    l_z_i = l_extender_bin.find('0')
+    pressed_button = None
+    #print(interrupt_counter, " ", l_extender_bin)
+    if l_z_i > -1 or l_extender == 127:
+        pressed_button = button_map["left_extender"][l_extender]
+        #print(pressed_button)
+    else:
+        r_z_i = r_extender_bin.find('0')
+        if r_z_i > -1 or r_extender == 127:
+            pressed_button = button_map["right_extender"][r_extender]
+            #print(pressed_button)
+    if pressed_button is not None:
+        seq_pressed(pressed_button)
+            
 
 if RPI_CONTROLLER:
     BUTTON_GPIO = 21
     GPIO.setmode(GPIO.BCM)
     GPIO.setup(BUTTON_GPIO, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-    GPIO.add_event_detect(BUTTON_GPIO, GPIO.FALLING, callback=button_pressed_callback, bouncetime=100)
+    GPIO.add_event_detect(BUTTON_GPIO, GPIO.FALLING, callback=button_pressed_callback, bouncetime=300)
 
 
 while True:
