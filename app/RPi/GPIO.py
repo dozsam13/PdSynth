@@ -83,6 +83,7 @@ def _get_gpio(line):
     pin = line 
     if mode_board:
         try:
+            print("MODE BOARD")
             pin = pins[line]
         except:
             pass

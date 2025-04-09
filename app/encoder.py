@@ -1,32 +1,47 @@
 import RPi.GPIO as GPIO
 import time
+from gpiozero import RotaryEncoder
 
+			
+class GPIOZeroEncoder:
+	def __init__(self, clk_pin, dt_pin, app_encoder = None):
+		encoder = RotaryEncoder(a=clk_pin, b=dt_pin, max_steps=100000, wrap=True)
+		self.encoder = encoder
+		if app_encoder is not None:
+			encoder.when_rotated_clockwise = lambda: app_encoder.state_change(1)
+			encoder.when_rotated_counter_clockwise = lambda: app_encoder.state_change(-1)
 
 class RPIEncoder:
-    def __init__(self, clk_pin, dt_pin, sw_pin):
+    def __init__(self, clk_pin, dt_pin, app_encoder = None):
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(clk_pin, GPIO.IN,pull_up_down=GPIO.PUD_UP)
         GPIO.setup(dt_pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-        GPIO.setup(sw_pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+        #GPIO.setup(sw_pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
         self.counter = 0
         self.clk_state = 0
         self.clk_pin = clk_pin
         self.dt_pin = dt_pin
-        self.sw_pin = sw_pin
+        #self.sw_pin = sw_pin
         self.prev_clk_state = GPIO.input(clk_pin)
+        self.app_encoder = app_encoder
     
     def callback(self, channel):
         clk_state = GPIO.input(self.clk_pin)
+        if clk_state != 1:
+            return
         dt_state = GPIO.input(self.dt_pin)
         #if clk_state != self.prev_clk_state and clk_state == GPIO.HIGH:
         #    self.counter += (dt_state != clk_state) * 2 -1
-        self.counter += (dt_state == GPIO.HIGH)*2-1
+        amnt = (dt_state == GPIO.HIGH)*2-1
+        self.counter += amnt
+        if self.app_encoder is not None:
+            self.app_encoder.state_change(amnt)
         #self.prev_clk_state = clk_state
         print("counter: {}, dir: {}, dt_state: {}, clk_state: {}".format(self.counter, (dt_state != clk_state) * 2 -1, dt_state, clk_state))
 
 def test_class():
     try:        
-        encoder = RPIEncoder(13, 6, 23)
+        encoder = RPIEncoder(4, 17)
         GPIO.add_event_detect(encoder.clk_pin, GPIO.RISING, callback=encoder.callback, bouncetime=10)
 
         while True:

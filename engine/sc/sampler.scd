@@ -32,7 +32,7 @@ t.schedAbs(t.nextBar, {~postBear.value});
 );
 
 (
-~track_ids = [1, 2];
+~track_ids = [1, 2, 3, 4];
 ~paramDict = Dictionary();
 ~patterns = [];
 /*~paramDict.put(\amp_1, 1.0);

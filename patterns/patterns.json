@@ -7,7 +7,8 @@
             {
                 "amp": 1,
                 "bufnum": 18,
-                "rate": 1    
+                "rate": 1,
+                "attack": 0    
             },
             "Sequence":
             {
@@ -20,11 +21,40 @@
             {
                 "amp": 1,
                 "bufnum": 69,
-                "rate": 2
+                "rate": 1,
+                "attack": 0    
             },
             "Sequence":
             {
                 "freq": [0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0]
+            }
+        },
+        "3":
+        {
+            "Home":
+            {
+                "amp":0,
+                "bufnum": 50,
+                "rate": 1,
+                "attack": 0    
+            },
+            "Sequence":
+            {
+                "freq": [1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0]
+            }
+        },
+        "4":
+        {
+            "Home":
+            {
+                "amp": 0,
+                "bufnum": 42,
+                "rate": 1,
+                "attack": 0    
+            },
+            "Sequence":
+            {
+                "freq": [1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
             }
         }
     }

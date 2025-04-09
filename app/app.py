@@ -5,6 +5,7 @@ from client.sc_client import SuperColliderClient
 import keyboard
 import time
 from enum import Enum
+from encoder import GPIOZeroEncoder
 
 
 RPI_CONTROLLER = True
@@ -12,14 +13,15 @@ RPI_CONTROLLER = True
 sc_client = SuperColliderClient()
 if RPI_CONTROLLER:
     from my_lcd_screen import LCDScreen
-    import RPi.GPIO as GPIO
+import RPi.GPIO as GPIO
 
 short_names = {
     "Home":
     {
         "amp": "amp",
         "bufnum": "buf",
-        "rate": "rte"
+        "rate": "rte",
+        "attack": "atk"
     }
 }
 
@@ -169,6 +171,12 @@ patterns = read_patterns()
 scenes = create_scenes(patterns[0].data)
 view_model = ViewModel(scenes)
 encoders = [Encoder(view_model), Encoder(view_model), Encoder(view_model), Encoder(view_model), Encoder(view_model), Encoder(view_model), Encoder(view_model), Encoder(view_model)]
+#if RPI_CONTROLLER:
+#4 17 nem muxik
+#5 27 
+#13 6 
+#19 26 
+rpi_encoders = [GPIOZeroEncoder(4, 17, encoders[0]), GPIOZeroEncoder(27, 5, encoders[1]), GPIOZeroEncoder(6, 13, encoders[2]), GPIOZeroEncoder(26, 19, encoders[3])]
 
 seq_running = False
 def seq_start_stop():
@@ -183,6 +191,8 @@ def seq_start_stop():
 keyboard.add_hotkey('space', seq_start_stop)
 keyboard.add_hotkey('x', lambda: change_track(1))
 keyboard.add_hotkey('c', lambda: change_track(2))
+keyboard.add_hotkey('v', lambda: change_track(3))
+keyboard.add_hotkey('b', lambda: change_track(4))
 
 keyboard.add_hotkey('n', lambda: change_scene(-1))
 keyboard.add_hotkey('m', lambda: change_scene(1))
@@ -215,6 +225,7 @@ bind_encoders()
 render_gui()
 if RPI_CONTROLLER:
     i2cbus = lcd_screen.screen.bus
+    print(i2cbus)
     l_extender_adress = 0x26
     r_extender_adress = 0x25
 
@@ -224,11 +235,11 @@ def button_pressed_callback(a):
     interrupt_counter += 1
     
     #print("INTERRUPT RECEIVED", flush=True)
-    #print(a)
+    #print("wtf")
     l_extender = i2cbus.read_byte_data(l_extender_adress,0xFF)
     r_extender = i2cbus.read_byte_data(r_extender_adress,0xFF)
-    #print(bin(l_extender), flush=True)
-    #print(bin(r_extender), flush=True)
+    print(bin(l_extender), flush=True)
+    print(bin(r_extender), flush=True)
     l_extender_bin = str(bin(l_extender))[2:]
     r_extender_bin = str(bin(r_extender))[2:]
     
@@ -239,22 +250,22 @@ def button_pressed_callback(a):
     #print(interrupt_counter, " ", l_extender_bin)
     if l_z_i > -1 or l_extender == 127:
         pressed_button = button_map["left_extender"][l_extender]
-        #print(pressed_button)
+        print(pressed_button)
     else:
         r_z_i = r_extender_bin.find('0')
         if r_z_i > -1 or r_extender == 127:
             pressed_button = button_map["right_extender"][r_extender]
-            #print(pressed_button)
-    if pressed_button is not None:
-        seq_pressed(pressed_button)
+            print(pressed_button)
+    #if pressed_button is not None:
+    #    seq_pressed(pressed_button)
             
 
 if RPI_CONTROLLER:
     BUTTON_GPIO = 21
     GPIO.setmode(GPIO.BCM)
-    GPIO.setup(BUTTON_GPIO, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-    GPIO.add_event_detect(BUTTON_GPIO, GPIO.FALLING, callback=button_pressed_callback, bouncetime=300)
+    GPIO.setup(BUTTON_GPIO, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+    GPIO.add_event_detect(BUTTON_GPIO, GPIO.RISING, callback=button_pressed_callback, bouncetime=500)
 
 
 while True:
-    pass
+    time.sleep(1)
