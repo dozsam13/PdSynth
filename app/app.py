@@ -6,6 +6,7 @@ import keyboard
 import time
 from enum import Enum
 from encoder import GPIOZeroEncoder
+from gpiozero import Button
 
 
 RPI_CONTROLLER = True
@@ -176,7 +177,7 @@ encoders = [Encoder(view_model), Encoder(view_model), Encoder(view_model), Encod
 #5 27 
 #13 6 
 #19 26 
-rpi_encoders = [GPIOZeroEncoder(4, 17, encoders[0]), GPIOZeroEncoder(27, 5, encoders[1]), GPIOZeroEncoder(6, 13, encoders[2]), GPIOZeroEncoder(26, 19, encoders[3])]
+rpi_encoders = [GPIOZeroEncoder(17, 4, encoders[0]), GPIOZeroEncoder(27, 5, encoders[1]), GPIOZeroEncoder(6, 13, encoders[2]), GPIOZeroEncoder(26, 19, encoders[3])]
 
 seq_running = False
 def seq_start_stop():
@@ -230,16 +231,18 @@ if RPI_CONTROLLER:
     r_extender_adress = 0x25
 
 interrupt_counter = 0
-def button_pressed_callback(a):
+def button_pressed_callback(gpio, level, tick):
     global interrupt_counter
     interrupt_counter += 1
     
     #print("INTERRUPT RECEIVED", flush=True)
     #print("wtf")
+    #time.sleep(1)
     l_extender = i2cbus.read_byte_data(l_extender_adress,0xFF)
     r_extender = i2cbus.read_byte_data(r_extender_adress,0xFF)
-    print(bin(l_extender), flush=True)
-    print(bin(r_extender), flush=True)
+    print("left: ", bin(l_extender), flush=True)
+    print("right: ", bin(r_extender), flush=True)
+    print("--------------------------------------------")
     l_extender_bin = str(bin(l_extender))[2:]
     r_extender_bin = str(bin(r_extender))[2:]
     
@@ -250,22 +253,30 @@ def button_pressed_callback(a):
     #print(interrupt_counter, " ", l_extender_bin)
     if l_z_i > -1 or l_extender == 127:
         pressed_button = button_map["left_extender"][l_extender]
-        print(pressed_button)
+        print("pressed from left ",pressed_button)
     else:
         r_z_i = r_extender_bin.find('0')
         if r_z_i > -1 or r_extender == 127:
             pressed_button = button_map["right_extender"][r_extender]
-            print(pressed_button)
+            print("pressed from right ", pressed_button)
     #if pressed_button is not None:
     #    seq_pressed(pressed_button)
             
-
+import pigpio
+pi = pigpio.pi()
+print(pi)
 if RPI_CONTROLLER:
     BUTTON_GPIO = 21
-    GPIO.setmode(GPIO.BCM)
-    GPIO.setup(BUTTON_GPIO, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
-    GPIO.add_event_detect(BUTTON_GPIO, GPIO.RISING, callback=button_pressed_callback, bouncetime=500)
+    #GPIO.setmode(GPIO.BCM)
+    #GPIO.setup(BUTTON_GPIO, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+    #GPIO.add_event_detect(BUTTON_GPIO, GPIO.FALLING, callback=button_pressed_callback, bouncetime=1000)
+    
+    
+    #button1 = Button(21)
+    #button1.when_pressed = button_pressed_callback
 
+    pi.set_mode(BUTTON_GPIO, pigpio.INPUT)
+    pi.callback(BUTTON_GPIO, pigpio.FALLING_EDGE, button_pressed_callback)
 
 while True:
     time.sleep(1)
