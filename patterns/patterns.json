@@ -7,8 +7,14 @@
             {
                 "amp": 1,
                 "bufnum": 18,
-                "rate": 1,
-                "attack": 0    
+                "rate": 1
+            },
+            "Amp":
+            {
+                "attack": 0,
+                "decay": 100,
+                "sustain": 100,
+                "release": 100
             },
             "Sequence":
             {
@@ -21,8 +27,14 @@
             {
                 "amp": 1,
                 "bufnum": 69,
-                "rate": 1,
-                "attack": 0    
+                "rate": 1   
+            },
+            "Amp":
+            {
+                "attack": 0,
+                "decay": 100,
+                "sustain": 100,
+                "release": 100
             },
             "Sequence":
             {
@@ -35,8 +47,14 @@
             {
                 "amp":0,
                 "bufnum": 50,
-                "rate": 1,
-                "attack": 0    
+                "rate": 1
+            },
+            "Amp":
+            {
+                "attack": 0,
+                "decay": 100,
+                "sustain": 100,
+                "release": 100    
             },
             "Sequence":
             {
@@ -49,8 +67,14 @@
             {
                 "amp": 0,
                 "bufnum": 42,
-                "rate": 1,
-                "attack": 0    
+                "rate": 1  
+            },
+            "Amp":
+            {
+                "attack": 0,
+                "decay": 100,
+                "sustain": 100,
+                "release": 100    
             },
             "Sequence":
             {

@@ -5,16 +5,16 @@ from client.sc_client import SuperColliderClient
 import keyboard
 import time
 from enum import Enum
-from encoder import GPIOZeroEncoder
-from gpiozero import Button
 
 
-RPI_CONTROLLER = True
+RPI_CONTROLLER = False
 
 sc_client = SuperColliderClient()
 if RPI_CONTROLLER:
     from my_lcd_screen import LCDScreen
-import RPi.GPIO as GPIO
+    from encoder import GPIOZeroEncoder
+    from gpiozero import Button
+    import RPi.GPIO as GPIO
 
 short_names = {
     "Home":
@@ -22,11 +22,30 @@ short_names = {
         "amp": "amp",
         "bufnum": "buf",
         "rate": "rte",
-        "attack": "atk"
+    },
+    "Amp":
+    {
+        "attack": "atk",
+        "decay": "dcy",
+        "sustain": "stn",
+        "release": "rls"
     }
 }
 
-#button_map = [,,,,0]
+value_intervals = {
+    "Home": 
+    {
+        "amp": [0, 4]
+    },
+    "Amp":
+    {
+        "attack": [0, 1],
+        "decay": [0, 1],
+        "sustain": [0, 1],
+        "release": [0, 1],
+    }
+}
+
 
 button_map = {
     "left_extender": {
@@ -88,12 +107,18 @@ class Scene:
 
         return final_text   
 
+def get_interval(scene_name, value_name):
+    if scene_name in value_intervals.keys() and value_name in value_intervals[scene_name].keys():
+        return value_intervals[scene_name][value_name]
+    else:
+        return None
 
 class DataObject:
     def __init__(self, name, value, scene):
         self.name = name
         self.value = value
         self.scene = scene
+        self.interval = get_interval(scene, name)
 
     def text(self):
         v = str(self.value)
@@ -102,9 +127,17 @@ class DataObject:
         return v, short_names[self.scene][self.name]
 
     def change_state(self, amnt):
-        self.value += amnt
-        sc_client.set_param("/" + self.name + "_" + current_track, self.value)
-        render_gui()
+        if self.interval is None:
+            self.value += amnt
+            sc_client.set_param("/" + self.name + "_" + current_track, self.value)
+            render_gui()
+        else:
+            if 0 <= (self.value + amnt) <= 100:
+                self.value += amnt
+                update_value = self.interval[0] + (self.interval[1]-self.interval[0])*float(self.value)/100
+                print(self.scene, self.name, self.value, update_value)
+                sc_client.set_param("/" + self.name + "_" + current_track, update_value+0.0001)
+                render_gui()
 
 
 class ViewModel:
@@ -177,7 +210,9 @@ encoders = [Encoder(view_model), Encoder(view_model), Encoder(view_model), Encod
 #5 27 
 #13 6 
 #19 26 
-rpi_encoders = [GPIOZeroEncoder(17, 4, encoders[0]), GPIOZeroEncoder(27, 5, encoders[1]), GPIOZeroEncoder(6, 13, encoders[2]), GPIOZeroEncoder(26, 19, encoders[3])]
+
+if RPI_CONTROLLER:
+    rpi_encoders = [GPIOZeroEncoder(17, 4, encoders[0]), GPIOZeroEncoder(27, 5, encoders[1]), GPIOZeroEncoder(6, 13, encoders[2]), GPIOZeroEncoder(26, 19, encoders[3])]
 
 seq_running = False
 def seq_start_stop():
@@ -262,18 +297,12 @@ def button_pressed_callback(gpio, level, tick):
     #if pressed_button is not None:
     #    seq_pressed(pressed_button)
             
-import pigpio
-pi = pigpio.pi()
-print(pi)
+
 if RPI_CONTROLLER:
+    #bind i2c interrupt
+    import pigpio
+    pi = pigpio.pi()
     BUTTON_GPIO = 21
-    #GPIO.setmode(GPIO.BCM)
-    #GPIO.setup(BUTTON_GPIO, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
-    #GPIO.add_event_detect(BUTTON_GPIO, GPIO.FALLING, callback=button_pressed_callback, bouncetime=1000)
-    
-    
-    #button1 = Button(21)
-    #button1.when_pressed = button_pressed_callback
 
     pi.set_mode(BUTTON_GPIO, pigpio.INPUT)
     pi.callback(BUTTON_GPIO, pigpio.FALLING_EDGE, button_pressed_callback)

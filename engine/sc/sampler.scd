@@ -1,6 +1,7 @@
 s.boot;
+
 s.doWhenBooted({
-~bs = SoundFile.collectIntoBuffers("/home/dozsam13/dev/PdSynth/samples/emx-sample-pack-50tube/*");
+~bs = SoundFile.collectIntoBuffers("C:\\dev\\PdSynth\\samples\\emx-sample-pack-50tube\\*");
 ~bs[0].path.postln;
 
 (
@@ -14,11 +15,12 @@ SynthDef.new(\sampy, {
 		startPos: \spos.kr(0)
 	);
 	env = EnvGen.kr(
-		envelope: Env(
-			levels: [0, 1, 0],
-			times:[\atk.ir(0.01), \decay.ir(0.5)],
-			curve: [0, 0]
-		),
+		envelope: Env.adsr(attackTime: \attack.ir(0.001), decayTime: \decay.ir(1.0), sustainLevel: \sustain.ir(1.0), releaseTime: \release.ir(1.0), peakLevel: 1.0, curve: 0.0, bias: 0.0)
+		/*Env(
+			levels: [0, 1, \sustain_level.ir(0.5), \sustain_level.ir(0.5), 0],
+			times:[\atk.ir(0.01), \decay.ir(0.5), \release.ir(0.5)],
+			curve: [0, 0]*/
+		,
 		doneAction: 2
 	);
 	Out.ar(\out.kr(0), sig*env*\amp.kr(1));
@@ -32,7 +34,7 @@ t.schedAbs(t.nextBar, {~postBear.value});
 );
 
 (
-~track_ids = [1, 2, 3, 4];
+~track_ids = [1, 2];
 ~paramDict = Dictionary();
 ~patterns = [];
 /*~paramDict.put(\amp_1, 1.0);
@@ -47,6 +49,11 @@ t.schedAbs(t.nextBar, {~postBear.value});
 	~paramDict.put(("bufnum_" ++ track_id).asSymbol, ~bs[14].bufnum);
 	~paramDict.put(("rate_" ++ track_id).asSymbol, Pseq([1.0], 1));
 	~paramDict.put(("freq_" ++ track_id).asSymbol, Pseq([100, \, \, \], 1));
+	//AMP
+	~paramDict.put(("attack_" ++ track_id).asSymbol, 0.001);
+	~paramDict.put(("decay_" ++ track_id).asSymbol, 1.0);
+	~paramDict.put(("sustain_" ++ track_id).asSymbol, 1.0);
+	~paramDict.put(("release_" ++ track_id).asSymbol, 0.5);
 });
 );
 (
@@ -69,6 +76,28 @@ t.schedAbs(t.nextBar, {~postBear.value});
 		~paramDict[("rate_" ++ track_id).asSymbol] = Pseq([msg[1]], 1);
 	}, "/rate_" ++ track_id);
 
+	OSCdef(("rate_" ++ track_id).asSymbol, { |msg|
+		//msg[1].postln;
+		~paramDict[("rate_" ++ track_id).asSymbol] = Pseq([msg[1]], 1);
+	}, "/rate_" ++ track_id);
+
+	OSCdef(("attack_" ++ track_id).asSymbol, { |msg|
+		msg[1].postln;
+		~paramDict[("attack_" ++ track_id).asSymbol] = Pseq([msg[1]], 1);
+	}, "/attack_" ++ track_id);
+
+	OSCdef(("decay_" ++ track_id).asSymbol, { |msg|
+		~paramDict[("decay_" ++ track_id).asSymbol] = Pseq([msg[1]], 1);
+	}, "/decay_" ++ track_id);
+
+	OSCdef(("sustain_" ++ track_id).asSymbol, { |msg|
+		~paramDict[("sustain_" ++ track_id).asSymbol] = Pseq([msg[1]], 1);
+	}, "/sustain_" ++ track_id);
+
+	OSCdef(("release_" ++ track_id).asSymbol, { |msg|
+		~paramDict[("release_" ++ track_id).asSymbol] = Pseq([msg[1]], 1);
+	}, "/release_" ++ track_id);
+
 	OSCdef(("freq_" ++ track_id).asSymbol, { |msg|
 		var seq, s2;
 		seq = msg.drop(1);
@@ -84,7 +113,12 @@ t.schedAbs(t.nextBar, {~postBear.value});
 		\amp, Pfunc({~paramDict[("amp_" ++ track_id).asSymbol]}),
 		\buf, Pfunc({~paramDict[("bufnum_" ++ track_id).asSymbol]}),
 		\rate, Pn(Plazy({~paramDict[("rate_" ++ track_id).asSymbol]}), inf),
-		\freq, Pn(Plazy({~paramDict[("freq_" ++ track_id).asSymbol]}), inf)
+		\freq, Pn(Plazy({~paramDict[("freq_" ++ track_id).asSymbol]}), inf),
+		//amp
+		\attack, Pfunc({~paramDict[("attack_" ++ track_id).asSymbol]}),
+		\decay, Pfunc({~paramDict[("decay_" ++ track_id).asSymbol]}),
+		\sustain, Pfunc({~paramDict[("sustain_" ++ track_id).asSymbol]}),
+		\release, Pfunc({~paramDict[("release_" ++ track_id).asSymbol]}),
 	);
 
 });
