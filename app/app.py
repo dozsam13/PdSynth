@@ -22,7 +22,11 @@ short_names = {
         "amp": "amp",
         "bufnum": "buf",
         "rate": "rte",
-        "attack": "atk"
+        "attack": "atk",
+        "amp1": "am1",
+        "bufnum1": "bu1",
+        "rate1": "rt1",
+        "attack1": "at1"
     }
 }
 
@@ -177,7 +181,14 @@ encoders = [Encoder(view_model), Encoder(view_model), Encoder(view_model), Encod
 #5 27 
 #13 6 
 #19 26 
-rpi_encoders = [GPIOZeroEncoder(17, 4, encoders[0]), GPIOZeroEncoder(27, 5, encoders[1]), GPIOZeroEncoder(6, 13, encoders[2]), GPIOZeroEncoder(26, 19, encoders[3])]
+rpi_encoders = [GPIOZeroEncoder(17, 4, encoders[0]),
+                GPIOZeroEncoder(27, 6, encoders[1]), 
+                GPIOZeroEncoder(13, 5, encoders[2]), 
+                GPIOZeroEncoder(26, 19, encoders[3]),
+                GPIOZeroEncoder(8, 25, encoders[4]),
+                GPIOZeroEncoder(24, 1, encoders[5]),
+                GPIOZeroEncoder(16, 20, encoders[6]),
+                GPIOZeroEncoder(7, 12, encoders[7])]
 
 seq_running = False
 def seq_start_stop():
@@ -227,44 +238,55 @@ render_gui()
 if RPI_CONTROLLER:
     i2cbus = lcd_screen.screen.bus
     print(i2cbus)
+    menu_extender_address = 0x23
     l_extender_adress = 0x26
     r_extender_adress = 0x25
 
 interrupt_counter = 0
-def button_pressed_callback(gpio, level, tick):
+btn_counter_map = {}
+def button_pressed_callback(a):
     global interrupt_counter
     interrupt_counter += 1
     
-    #print("INTERRUPT RECEIVED", flush=True)
+    print("INTERRUPT RECEIVED", flush=True)
     #print("wtf")
     #time.sleep(1)
     l_extender = i2cbus.read_byte_data(l_extender_adress,0xFF)
     r_extender = i2cbus.read_byte_data(r_extender_adress,0xFF)
-    print("left: ", bin(l_extender), flush=True)
-    print("right: ", bin(r_extender), flush=True)
-    print("--------------------------------------------")
+    menu_extender = i2cbus.read_byte_data(menu_extender_address,0xFF)
     l_extender_bin = str(bin(l_extender))[2:]
     r_extender_bin = str(bin(r_extender))[2:]
-    
-    #print(interrupt_counter, " ", l_extender_bin, " ", r_extender_bin)  
-    
+    menu_extender_bin = str(bin(menu_extender))[2:]
+    print("menu extender ", menu_extender_bin)
     l_z_i = l_extender_bin.find('0')
     pressed_button = None
     #print(interrupt_counter, " ", l_extender_bin)
     if l_z_i > -1 or l_extender == 127:
         pressed_button = button_map["left_extender"][l_extender]
-        print("pressed from left ",pressed_button)
+        #print("pressed from left ",pressed_button)
+        
+        #print("left: ", bin(l_extender), flush=True)
+        #print("right: ", bin(r_extender), flush=True)
+        #print("--------------------------------------------")
+        #print(interrupt_counter, " ", l_extender_bin, " ", r_extender_bin)  
     else:
         r_z_i = r_extender_bin.find('0')
         if r_z_i > -1 or r_extender == 127:
             pressed_button = button_map["right_extender"][r_extender]
-            print("pressed from right ", pressed_button)
-    #if pressed_button is not None:
-    #    seq_pressed(pressed_button)
+            #print("pressed from right ", pressed_button)
+            #print("left: ", bin(l_extender), flush=True)
+            #print("right: ", bin(r_extender), flush=True)
+            #print("--------------------------------------------")
+            #print(interrupt_counter, " ", l_extender_bin, " ", r_extender_bin)  
+    if pressed_button is not None:
+        if pressed_button in btn_counter_map.keys():
+            btn_counter_map[pressed_button] += 1
+        else:
+            btn_counter_map[pressed_button] = 1
+        print(pressed_button, " ", btn_counter_map[pressed_button])
+        #seq_pressed(pressed_button)
             
-import pigpio
-pi = pigpio.pi()
-print(pi)
+
 if RPI_CONTROLLER:
     BUTTON_GPIO = 21
     #GPIO.setmode(GPIO.BCM)
@@ -272,11 +294,8 @@ if RPI_CONTROLLER:
     #GPIO.add_event_detect(BUTTON_GPIO, GPIO.FALLING, callback=button_pressed_callback, bouncetime=1000)
     
     
-    #button1 = Button(21)
-    #button1.when_pressed = button_pressed_callback
-
-    pi.set_mode(BUTTON_GPIO, pigpio.INPUT)
-    pi.callback(BUTTON_GPIO, pigpio.FALLING_EDGE, button_pressed_callback)
+    button1 = Button(21)
+    button1.when_pressed = button_pressed_callback
 
 while True:
     time.sleep(1)
