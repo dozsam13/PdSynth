@@ -1,12 +1,13 @@
 s.boot;
-
-s.doWhenBooted({
+s.freeAll;
+//s.doWhenBooted({
 ~bs = SoundFile.collectIntoBuffers("C:\\dev\\PdSynth\\samples\\emx-sample-pack-50tube\\*");
 ~bs[0].path.postln;
 
 (
+(
 SynthDef.new(\sampy, {
-	var sig, env;
+	var sig, env, envgen;
 
 	sig = PlayBuf.ar(
 		numChannels: 2,
@@ -14,15 +15,13 @@ SynthDef.new(\sampy, {
 		rate: BufRateScale.kr(\buf.kr(0)) * \rate.kr(1),  //44100/44100
 		startPos: \spos.kr(0)
 	);
-	env = EnvGen.kr(
-		envelope: Env.adsr(attackTime: \attack.ir(0.001), decayTime: \decay.ir(1.0), sustainLevel: \sustain.ir(1.0), releaseTime: \release.ir(1.0), peakLevel: 1.0, curve: 0.0, bias: 0.0)
-		/*Env(
-			levels: [0, 1, \sustain_level.ir(0.5), \sustain_level.ir(0.5), 0],
-			times:[\atk.ir(0.01), \decay.ir(0.5), \release.ir(0.5)],
-			curve: [0, 0]*/
-		,
-		doneAction: 2
-	);
+	env = Env.new(
+		levels: [0, 1, \sustain_level.kr(0.5), 0], // levels
+		times: [\attack.kr(0.01), \decay.kr(0.3), \release.kr(0.1)],
+		curve: 'lin'
+	).kr(doneAction: 2);
+
+
 	Out.ar(\out.kr(0), sig*env*\amp.kr(1));
 }).add;
 );
@@ -37,11 +36,6 @@ t.schedAbs(t.nextBar, {~postBear.value});
 ~track_ids = [1, 2];
 ~paramDict = Dictionary();
 ~patterns = [];
-/*~paramDict.put(\amp_1, 1.0);
-~paramDict.put(\bufnum_1, ~bs[14].bufnum);
-~paramDict.put(\rate_1, Pseq([1.0], 1));
-~paramDict.put(\freq_1, Pseq([100, \, \, \], 1));
-*/
 ~track_ids.do({
 	arg track_id;
 
@@ -146,4 +140,15 @@ OSCdef(\volume, { |msg|
 }, "/volume");
 );
 
-})
+)
+//})
+
+~players = ~patterns.collect({ |ptn| ptn.play(t)});
+~players.do({ |player| player.stop;});
+~paramDict[("amp_1").asSymbol] = 1;
+~paramDict[("amp_2").asSymbol] = 0;
+
+~paramDict[("bufnum_1").asSymbol] = 10;
+~paramDict[("bufnum_2").asSymbol] = msg[1];
+s.freeAll;
+s.queryAllNodes;
