@@ -1,4 +1,5 @@
 s.boot;
+s.reboot;
 s.freeAll;
 //s.doWhenBooted({
 ~bs = SoundFile.collectIntoBuffers("C:\\dev\\PdSynth\\samples\\emx-sample-pack-50tube\\*");
@@ -16,7 +17,7 @@ SynthDef.new(\sampy, {
 		startPos: \spos.kr(0)
 	);
 	env = Env.new(
-		levels: [0, 1, \sustain_level.kr(0.5), 0], // levels
+		levels: [0, 1, \sustain_level.kr(1.0), 0], // levels
 		times: [\attack.kr(0.01), \decay.kr(0.3), \release.kr(0.1)],
 		curve: 'lin'
 	).kr(doneAction: 2);
@@ -46,7 +47,7 @@ t.schedAbs(t.nextBar, {~postBear.value});
 	//AMP
 	~paramDict.put(("attack_" ++ track_id).asSymbol, 0.001);
 	~paramDict.put(("decay_" ++ track_id).asSymbol, 1.0);
-	~paramDict.put(("sustain_" ++ track_id).asSymbol, 1.0);
+	~paramDict.put(("sustain_level" ++ track_id).asSymbol, 1.0);
 	~paramDict.put(("release_" ++ track_id).asSymbol, 0.5);
 });
 );
@@ -70,27 +71,25 @@ t.schedAbs(t.nextBar, {~postBear.value});
 		~paramDict[("rate_" ++ track_id).asSymbol] = Pseq([msg[1]], 1);
 	}, "/rate_" ++ track_id);
 
-	OSCdef(("rate_" ++ track_id).asSymbol, { |msg|
-		//msg[1].postln;
-		~paramDict[("rate_" ++ track_id).asSymbol] = Pseq([msg[1]], 1);
-	}, "/rate_" ++ track_id);
-
 	OSCdef(("attack_" ++ track_id).asSymbol, { |msg|
-		msg[1].postln;
-		~paramDict[("attack_" ++ track_id).asSymbol] = Pseq([msg[1]], 1);
+		~paramDict[("attack_" ++ track_id).asSymbol] = msg[1];
 	}, "/attack_" ++ track_id);
 
 	OSCdef(("decay_" ++ track_id).asSymbol, { |msg|
-		~paramDict[("decay_" ++ track_id).asSymbol] = Pseq([msg[1]], 1);
+		~paramDict[("decay_" ++ track_id).asSymbol] = msg[1];
 	}, "/decay_" ++ track_id);
 
 	OSCdef(("sustain_" ++ track_id).asSymbol, { |msg|
-		~paramDict[("sustain_" ++ track_id).asSymbol] = Pseq([msg[1]], 1);
+		~paramDict[("sustain_" ++ track_id).asSymbol] = msg[1];
 	}, "/sustain_" ++ track_id);
 
 	OSCdef(("release_" ++ track_id).asSymbol, { |msg|
-		~paramDict[("release_" ++ track_id).asSymbol] = Pseq([msg[1]], 1);
+		~paramDict[("release_" ++ track_id).asSymbol] = msg[1];
 	}, "/release_" ++ track_id);
+
+	OSCdef(("sustain_level_" ++ track_id).asSymbol, { |msg|
+		~paramDict[("sustain_level_" ++ track_id).asSymbol] = msg[1];
+	}, "/sustain_level_" ++ track_id);
 
 	OSCdef(("freq_" ++ track_id).asSymbol, { |msg|
 		var seq, s2;
@@ -111,7 +110,7 @@ t.schedAbs(t.nextBar, {~postBear.value});
 		//amp
 		\attack, Pfunc({~paramDict[("attack_" ++ track_id).asSymbol]}),
 		\decay, Pfunc({~paramDict[("decay_" ++ track_id).asSymbol]}),
-		\sustain, Pfunc({~paramDict[("sustain_" ++ track_id).asSymbol]}),
+		\sustain_level, Pfunc({~paramDict[("sustain_level" ++ track_id).asSymbol]}),
 		\release, Pfunc({~paramDict[("release_" ++ track_id).asSymbol]}),
 	);
 
@@ -149,6 +148,7 @@ OSCdef(\volume, { |msg|
 ~paramDict[("amp_2").asSymbol] = 0;
 
 ~paramDict[("bufnum_1").asSymbol] = 10;
+~paramDict[("attack_1").asSymbol] = 0.05;
 ~paramDict[("bufnum_2").asSymbol] = msg[1];
 s.freeAll;
 s.queryAllNodes;

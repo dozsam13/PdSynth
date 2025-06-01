@@ -13,7 +13,7 @@
             {
                 "attack": 0,
                 "decay": 100,
-                "sustain": 100,
+                "sustain_level": 100,
                 "release": 100
             },
             "Sequence":
@@ -33,7 +33,7 @@
             {
                 "attack": 0,
                 "decay": 100,
-                "sustain": 100,
+                "sustain_level": 100,
                 "release": 100
             },
             "Sequence":
@@ -53,7 +53,7 @@
             {
                 "attack": 0,
                 "decay": 100,
-                "sustain": 100,
+                "sustain_level": 100,
                 "release": 100    
             },
             "Sequence":
@@ -73,7 +73,7 @@
             {
                 "attack": 0,
                 "decay": 100,
-                "sustain": 100,
+                "sustain_level": 100,
                 "release": 100    
             },
             "Sequence":

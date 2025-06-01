@@ -27,7 +27,7 @@ short_names = {
     {
         "attack": "atk",
         "decay": "dcy",
-        "sustain": "stn",
+        "sustain_level": "stl",
         "release": "rls"
     }
 }
@@ -41,7 +41,7 @@ value_intervals = {
     {
         "attack": [0, 1],
         "decay": [0, 1],
-        "sustain": [0, 1],
+        "sustain_level": [0, 1],
         "release": [0, 1],
     }
 }
@@ -205,11 +205,6 @@ patterns = read_patterns()
 scenes = create_scenes(patterns[0].data)
 view_model = ViewModel(scenes)
 encoders = [Encoder(view_model), Encoder(view_model), Encoder(view_model), Encoder(view_model), Encoder(view_model), Encoder(view_model), Encoder(view_model), Encoder(view_model)]
-#if RPI_CONTROLLER:
-#4 17 nem muxik
-#5 27 
-#13 6 
-#19 26 
 
 
 if RPI_CONTROLLER:
