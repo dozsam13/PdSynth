@@ -1,14 +1,14 @@
 s.boot;
 s.reboot;
 s.freeAll;
-//s.doWhenBooted({
+s.doWhenBooted({
 ~bs = SoundFile.collectIntoBuffers("C:\\dev\\PdSynth\\samples\\emx-sample-pack-50tube\\*");
 ~bs[0].path.postln;
 
 (
 (
 SynthDef.new(\sampy, {
-	var sig, env, envgen;
+	var sig, env, envgen, sig2;
 
 	sig = PlayBuf.ar(
 		numChannels: 2,
@@ -22,7 +22,8 @@ SynthDef.new(\sampy, {
 		curve: 'lin'
 	).kr(doneAction: 2);
 
-
+	//sig = SVF.ar(sig, cutoff: \cutoff.kr(2200.0), res: \resonance.kr(0.1), lowpass: 1.0, bandpass: 0.0, highpass: 0.0, notch: 0.0, peak: 0.0, mul: 1.0, add: 0.0);
+	sig = RLPF.ar(in: sig, freq: \cutoff.kr(2200.0), rq: \resonance.kr(0.01), mul: 1.0, add: 0.0);
 	Out.ar(\out.kr(0), sig*env*\amp.kr(1));
 }).add;
 );
@@ -34,13 +35,13 @@ t.schedAbs(t.nextBar, {~postBear.value});
 );
 
 (
-~track_ids = [1, 2];
+~track_ids = [1, 2, 3, 4];
 ~paramDict = Dictionary();
 ~patterns = [];
 ~track_ids.do({
 	arg track_id;
 
-	~paramDict.put(("amp_" ++ track_id).asSymbol, 1.0);
+	~paramDict.put(("amp_" ++ track_id).asSymbol, 0.0);
 	~paramDict.put(("bufnum_" ++ track_id).asSymbol, ~bs[14].bufnum);
 	~paramDict.put(("rate_" ++ track_id).asSymbol, Pseq([1.0], 1));
 	~paramDict.put(("freq_" ++ track_id).asSymbol, Pseq([100, \, \, \], 1));
@@ -49,6 +50,9 @@ t.schedAbs(t.nextBar, {~postBear.value});
 	~paramDict.put(("decay_" ++ track_id).asSymbol, 1.0);
 	~paramDict.put(("sustain_level" ++ track_id).asSymbol, 1.0);
 	~paramDict.put(("release_" ++ track_id).asSymbol, 0.5);
+	//FILTER
+	~paramDict.put(("cutoff_" ++ track_id).asSymbol, 2200.0);
+	~paramDict.put(("resonance_" ++ track_id).asSymbol, 0.1);
 });
 );
 (
@@ -91,6 +95,14 @@ t.schedAbs(t.nextBar, {~postBear.value});
 		~paramDict[("sustain_level_" ++ track_id).asSymbol] = msg[1];
 	}, "/sustain_level_" ++ track_id);
 
+	OSCdef(("cutoff_" ++ track_id).asSymbol, { |msg|
+		~paramDict[("cutoff_" ++ track_id).asSymbol] = msg[1];
+	}, "/cutoff_" ++ track_id);
+
+	OSCdef(("resonance_" ++ track_id).asSymbol, { |msg|
+		~paramDict[("resonance_" ++ track_id).asSymbol] = msg[1];
+	}, "/resonance_" ++ track_id);
+
 	OSCdef(("freq_" ++ track_id).asSymbol, { |msg|
 		var seq, s2;
 		seq = msg.drop(1);
@@ -112,6 +124,9 @@ t.schedAbs(t.nextBar, {~postBear.value});
 		\decay, Pfunc({~paramDict[("decay_" ++ track_id).asSymbol]}),
 		\sustain_level, Pfunc({~paramDict[("sustain_level" ++ track_id).asSymbol]}),
 		\release, Pfunc({~paramDict[("release_" ++ track_id).asSymbol]}),
+		//filter
+		\cutoff, Pfunc({~paramDict[("cutoff_" ++ track_id).asSymbol]}),
+		\resonance, Pfunc({~paramDict[("resonance_" ++ track_id).asSymbol]})
 	);
 
 });
@@ -124,6 +139,9 @@ OSCdef(\start_seq, { |msg|
 
 }, "/start_seq");
 
+~players = ~patterns.collect({ |ptn|
+		ptn.play(t)
+});
 OSCdef(\stop_seq, { |msg|
 	~players.do({ |player|
 		player.stop;
@@ -140,8 +158,9 @@ OSCdef(\volume, { |msg|
 );
 
 )
-//})
+})
 
+/*
 ~players = ~patterns.collect({ |ptn| ptn.play(t)});
 ~players.do({ |player| player.stop;});
 ~paramDict[("amp_1").asSymbol] = 1;
@@ -152,3 +171,4 @@ OSCdef(\volume, { |msg|
 ~paramDict[("bufnum_2").asSymbol] = msg[1];
 s.freeAll;
 s.queryAllNodes;
+*/

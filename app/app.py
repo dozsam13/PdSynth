@@ -29,6 +29,11 @@ short_names = {
         "decay": "dcy",
         "sustain_level": "stl",
         "release": "rls"
+    },
+    "Filter":
+    {
+        "cutoff": "ctf",
+        "resonance": "res"
     }
 }
 
@@ -43,6 +48,11 @@ value_intervals = {
         "decay": [0, 1],
         "sustain_level": [0, 1],
         "release": [0, 1],
+    },
+    "Filter":
+    {
+        "cutoff": [0, 2200],
+        "resonance": [1, 0]
     }
 }
 

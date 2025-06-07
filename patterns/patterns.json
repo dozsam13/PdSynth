@@ -16,6 +16,11 @@
                 "sustain_level": 100,
                 "release": 100
             },
+            "Filter":
+            {
+                "cutoff": 100,
+                "resonance": 0
+            },
             "Sequence":
             {
                 "freq": [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0]
@@ -35,6 +40,11 @@
                 "decay": 100,
                 "sustain_level": 100,
                 "release": 100
+            },
+            "Filter":
+            {
+                "cutoff": 100,
+                "resonance": 0
             },
             "Sequence":
             {
@@ -56,6 +66,11 @@
                 "sustain_level": 100,
                 "release": 100    
             },
+            "Filter":
+            {
+                "cutoff": 100,
+                "resonance": 0
+            },
             "Sequence":
             {
                 "freq": [1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0]
@@ -75,6 +90,11 @@
                 "decay": 100,
                 "sustain_level": 100,
                 "release": 100    
+            },
+            "Filter":
+            {
+                "cutoff": 100,
+                "resonance": 0
             },
             "Sequence":
             {
