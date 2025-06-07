@@ -41,7 +41,9 @@ t.schedAbs(t.nextBar, {~postBear.value});
 ~track_ids.do({
 	arg track_id;
 
-	~paramDict.put(("amp_" ++ track_id).asSymbol, 0.0);
+	~paramDict.put(("amp_" ++ track_id).asSymbol, 0
+
+					.0);
 	~paramDict.put(("bufnum_" ++ track_id).asSymbol, ~bs[14].bufnum);
 	~paramDict.put(("rate_" ++ track_id).asSymbol, Pseq([1.0], 1));
 	~paramDict.put(("freq_" ++ track_id).asSymbol, Pseq([100, \, \, \], 1));
