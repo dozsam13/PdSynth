@@ -189,21 +189,26 @@ def create_scenes(ptn):
 
 def render_gui():
     t = scenes[current_track][current_scene_idx].text()
+    t2 = []
+    for e in t:
+        t2.append(e)#.ljust(20))
     if RPI_CONTROLLER:
-        lcd_screen.write_lines(t)
-    print(t[0])
-    print(t[1])
-    print(t[2])
-    print(t[3])
+        lcd_screen.write_lines(t2)
+    print(t2[0])
+    print(t2[1])
+    print(t2[2])
+    print(t2[3])
 
 def change_track(trk):
     global current_track
     global current_scene_idx
     current_track = str(trk)
-    change_scene(current_scene_idx)
+    change_scene_to(current_scene_idx)
 
 def change_scene_to(scn):
     global current_scene_idx
+    if len(scenes[current_track]) <= scn:
+        return
     unbind_encoders()
     current_scene_idx = scn
     bind_encoders()
@@ -334,7 +339,7 @@ def button_pressed_callback(a):
     global interrupt_counter
     interrupt_counter += 1
     
-    #print("INTERRUPT RECEIVED", flush=True)
+    print("INTERRUPT RECEIVED", flush=True)
     l_extender = i2cbus.read_byte_data(l_extender_adress,0xFF)
     r_extender = i2cbus.read_byte_data(r_extender_adress,0xFF)
     menu_extender = i2cbus.read_byte_data(menu_extender_address,0xFF)
@@ -363,7 +368,7 @@ def button_pressed_callback(a):
 
     for dif in menu_ext_diffs:
     	if dif < 5:
-    		change_scene_to(button_map["menu_extender"][dif] + 1)
+    		change_scene_to(button_map["menu_extender"][dif])
 
     button_model.l_extender = l_extender_bin
     button_model.r_extender = r_extender_bin

@@ -24,7 +24,7 @@ SynthDef.new(\sampy, {
 
 	//sig = SVF.ar(sig, cutoff: \cutoff.kr(2200.0), res: \resonance.kr(0.1), lowpass: 1.0, bandpass: 0.0, highpass: 0.0, notch: 0.0, peak: 0.0, mul: 1.0, add: 0.0);
 	sig = RLPF.ar(in: sig, freq: \cutoff.kr(2200.0), rq: \resonance.kr(0.01), mul: 1.0, add: 0.0);
-	Out.ar(\out.kr(0), sig*env*\amp.kr(1));
+	Out.ar(\out.kr(0), sig*env*\amp.kr(1)*\mute.kr(1));
 }).add;
 );
 
@@ -44,6 +44,7 @@ t.schedAbs(t.nextBar, {~postBear.value});
 	~paramDict.put(("amp_" ++ track_id).asSymbol, 0.0);
 	~paramDict.put(("bufnum_" ++ track_id).asSymbol, ~bs[14].bufnum);
 	~paramDict.put(("rate_" ++ track_id).asSymbol, Pseq([1.0], 1));
+	~paramDict.put(("mute_" ++ track_id).asSymbol, 1.0);
 	~paramDict.put(("freq_" ++ track_id).asSymbol, Pseq([100, \, \, \], 1));
 	//AMP
 	~paramDict.put(("attack_" ++ track_id).asSymbol, 0.001);
@@ -103,6 +104,10 @@ t.schedAbs(t.nextBar, {~postBear.value});
 		~paramDict[("resonance_" ++ track_id).asSymbol] = msg[1];
 	}, "/resonance_" ++ track_id);
 
+	OSCdef(("mute_" ++ track_id).asSymbol, { |msg|
+		~paramDict[("mute_" ++ track_id).asSymbol] = msg[1];
+	}, "/mute_" ++ track_id);
+
 	OSCdef(("freq_" ++ track_id).asSymbol, { |msg|
 		var seq, s2;
 		seq = msg.drop(1);
@@ -118,6 +123,7 @@ t.schedAbs(t.nextBar, {~postBear.value});
 		\amp, Pfunc({~paramDict[("amp_" ++ track_id).asSymbol]}),
 		\buf, Pfunc({~paramDict[("bufnum_" ++ track_id).asSymbol]}),
 		\rate, Pn(Plazy({~paramDict[("rate_" ++ track_id).asSymbol]}), inf),
+		\mute, Pfunc({~paramDict[("mute_" ++ track_id).asSymbol]}),
 		\freq, Pn(Plazy({~paramDict[("freq_" ++ track_id).asSymbol]}), inf),
 		//amp
 		\attack, Pfunc({~paramDict[("attack_" ++ track_id).asSymbol]}),
