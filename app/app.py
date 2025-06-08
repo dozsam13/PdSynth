@@ -7,7 +7,7 @@ import time
 from enum import Enum
 
 
-RPI_CONTROLLER = False
+RPI_CONTROLLER = True
 
 sc_client = SuperColliderClient()
 if RPI_CONTROLLER:
@@ -59,26 +59,36 @@ value_intervals = {
 
 button_map = {
     "left_extender": {
-        247: 0,
-        191: 1,
-        239: 2,
-        251: 3,
-        127: 8,
-        223: 9,
-        253: 10,
-        254: 11
+        4: 0,
+        1: 1,
+        3: 2,
+        5: 3,
+        0: 8,
+        2: 9,
+        6: 10,
+        7: 11
     },
     "right_extender": {
-        254: 4,
-        239: 5,
-        191: 6,
-        247: 7,
-        251: 12,
-        253: 13,
-        223: 14,
-        127: 15
+        7: 4,
+        3: 5,
+        1: 6,
+        4: 7,
+        5: 12,
+        6: 13,
+        2: 14,
+        0: 15
+    },
+    "menu_extender": {
+    	4: 0,
+    	0: 1,
+    	1: 2,
+    	2: 3,
+    	3: 4,
+    	7: None, #mute
+    	6: None  #func
     }
 }
+
 
 current_track = "1"
 current_scene_idx = 0
@@ -97,6 +107,14 @@ def read_patterns():
         pattern.data = pattern_data
         patterns.append(pattern)
     return patterns
+
+class ButtonModel:
+	def __init__(self):
+		self.l_extender = "11111111"
+		self.r_extender = "11111111"
+		self.menu_extender = "11111111"
+
+button_model = ButtonModel()
 
 class Scene:
     def __init__(self, name, data):
@@ -180,18 +198,26 @@ def render_gui():
 
 def change_track(trk):
     global current_track
+    global current_scene_idx
     current_track = str(trk)
-    change_scene(0)
+    change_scene(current_scene_idx)
+
+def change_scene_to(scn):
+    global current_scene_idx
+    unbind_encoders()
+    current_scene_idx = scn
+    bind_encoders()
+    render_gui()
+
 
 def change_scene(amnt):
     global current_scene_idx
     global current_track
-    unbind_encoders()
+    
     current_scene_idx += amnt
     current_scene_idx %= len(scenes[current_track])
-    bind_encoders()
-    render_gui()
-
+    change_scene_to(current_scene_idx)
+    
 
 def unbind_encoders():
     for i, encoder in enumerate(encoders):
@@ -219,7 +245,7 @@ encoders = [Encoder(view_model), Encoder(view_model), Encoder(view_model), Encod
 
 if RPI_CONTROLLER:
     rpi_encoders = [GPIOZeroEncoder(17, 4, encoders[0]),
-                    GPIOZeroEncoder(27, 6, encoders[1]), 
+                    GPIOZeroEncoder(6, 27, encoders[1]), 
                     GPIOZeroEncoder(13, 5, encoders[2]), 
                     GPIOZeroEncoder(26, 19, encoders[3]),
                     GPIOZeroEncoder(8, 25, encoders[4]),
@@ -279,53 +305,71 @@ if RPI_CONTROLLER:
     l_extender_adress = 0x26
     r_extender_adress = 0x25
 
+def find_all_indices(lst, element):
+    indices = []
+    for i in range(len(lst)):
+        if lst[i] == element:
+            indices.append(i)
+    return indices
+
 interrupt_counter = 0
 btn_counter_map = {}
+
+def append_first_zero(binary_number):
+    if len(binary_number) < 8:
+        binary_number = "0" + binary_number
+    return binary_number
+
+def find_differences(str1, str2):
+    return [i for i, (a, b) in enumerate(zip(str1, str2)) if a != b]
+
+def keep_only_zeros(diff_indexes, extender_bin):
+	r = []
+	for ind in diff_indexes:
+		if extender_bin[ind] == "0":
+			r.append(ind)
+	return r
+
 def button_pressed_callback(a):
     global interrupt_counter
     interrupt_counter += 1
     
-    print("INTERRUPT RECEIVED", flush=True)
-    #print("wtf")
-    #time.sleep(1)
+    #print("INTERRUPT RECEIVED", flush=True)
     l_extender = i2cbus.read_byte_data(l_extender_adress,0xFF)
     r_extender = i2cbus.read_byte_data(r_extender_adress,0xFF)
     menu_extender = i2cbus.read_byte_data(menu_extender_address,0xFF)
-    l_extender_bin = str(bin(l_extender))[2:]
-    r_extender_bin = str(bin(r_extender))[2:]
-    menu_extender_bin = str(bin(menu_extender))[2:]
-    print("menu extender ", menu_extender_bin)
-    l_z_i = l_extender_bin.find('0')
-    pressed_button = None
-    #print(interrupt_counter, " ", l_extender_bin)
-    if l_z_i > -1 or l_extender == 127:
-        pressed_button = button_map["left_extender"][l_extender]
-        #print("pressed from left ",pressed_button)
-        
-        #print("left: ", bin(l_extender), flush=True)
-        #print("right: ", bin(r_extender), flush=True)
-        #print("--------------------------------------------")
-        #print(interrupt_counter, " ", l_extender_bin, " ", r_extender_bin)  
-    else:
-        r_z_i = r_extender_bin.find('0')
-        if r_z_i > -1 or r_extender == 127:
-            pressed_button = button_map["right_extender"][r_extender]
-            #print("pressed from right ", pressed_button)
-            #print("left: ", bin(l_extender), flush=True)
-            #print("right: ", bin(r_extender), flush=True)
-            #print("--------------------------------------------")
-            #print(interrupt_counter, " ", l_extender_bin, " ", r_extender_bin)  
-    if pressed_button is not None:
-        if pressed_button in btn_counter_map.keys():
-            btn_counter_map[pressed_button] += 1
-        else:
-            btn_counter_map[pressed_button] = 1
-        print(pressed_button, " ", btn_counter_map[pressed_button])
-        #seq_pressed(pressed_button)
-            
+    l_extender_bin = append_first_zero(str(bin(l_extender))[2:])
+    r_extender_bin = append_first_zero(str(bin(r_extender))[2:])
+    menu_extender_bin = append_first_zero(str(bin(menu_extender))[2:])
+
+    l_ext_diffs = keep_only_zeros(find_differences(button_model.l_extender, l_extender_bin), l_extender_bin)
+    r_ext_diffs = keep_only_zeros(find_differences(button_model.r_extender, r_extender_bin), r_extender_bin)
+    menu_ext_diffs = keep_only_zeros(find_differences(button_model.menu_extender, menu_extender_bin), menu_extender_bin)
+    for dif in l_ext_diffs:
+    	if menu_extender_bin[7] == "0":
+    		print("muting track: ", button_map["left_extender"][dif] + 1)
+    	elif menu_extender_bin[6] == "0":
+    		change_track(button_map["left_extender"][dif] + 1)
+    	else:
+    		seq_pressed(button_map["left_extender"][dif])
+
+    for dif in r_ext_diffs:
+    	if menu_extender_bin[7] == "0":
+    		print("muting track: ", button_map["right_extender"][dif] + 1)
+    	elif menu_extender_bin[6] == "0":
+    		change_track(button_map["right_extender"][dif] + 1)
+    	else:
+    		seq_pressed(button_map["right_extender"][dif])
+
+    for dif in menu_ext_diffs:
+    	if dif < 5:
+    		change_scene_to(button_map["menu_extender"][dif] + 1)
+
+    button_model.l_extender = l_extender_bin
+    button_model.r_extender = r_extender_bin
+    button_model.menu_extender = menu_extender_bin
 
 if RPI_CONTROLLER:
-    #bind i2c interrupt
     import pigpio
     pi = pigpio.pi()
     BUTTON_GPIO = 21
