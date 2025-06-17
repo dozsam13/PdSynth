@@ -1,6 +1,7 @@
 from pythonosc import udp_client
 import time
 import threading
+from helper import get_interval
 
 from pythonosc import dispatcher
 from pythonosc import osc_server
@@ -43,6 +44,22 @@ class SuperColliderClient:
 	def stop(self):
 		self.osc_server.shutdown()
 		#self.osc_server_thread.join()
+
+	def load_pattern(self, pattern):
+		track_data = pattern["track_data"]
+
+		for track_id in track_data.keys():
+			for scene_name in track_data[track_id].keys():
+				for param_name, param_value in track_data[track_id][scene_name].items():
+					if not scene_name == "Sequence":
+						interval = get_interval(scene_name, param_name)
+						if interval is None:
+							value = param_value
+						else:
+							value = interval[0] + (interval[1]-interval[0])*float(param_value)/100
+						self.set_param("/" + param_name + "_" + track_id, value)
+					else:
+						self.set_param("/freq_" + track_id, list(map(lambda x: x if x==1 else "", track_data[track_id]["Sequence"]["freq"])))
 
 
 

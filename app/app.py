@@ -5,9 +5,16 @@ from client.sc_client import SuperColliderClient
 import keyboard
 import time
 from enum import Enum
+import argparse
+from helper import get_interval
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--rpi', action='store_true', default=False, 
+                    help='Use RaspberryPI hardware')
+args = parser.parse_args()
 
 
-RPI_CONTROLLER = True
+RPI_CONTROLLER = args.rpi
 
 sc_client = SuperColliderClient()
 if RPI_CONTROLLER:
@@ -26,8 +33,7 @@ short_names = {
     "Amp":
     {
         "attack": "atk",
-        "decay": "dcy",
-        "sustain_level": "stl",
+        "sustain": "stn",
         "release": "rls"
     },
     "Filter":
@@ -36,26 +42,6 @@ short_names = {
         "resonance": "res"
     }
 }
-
-value_intervals = {
-    "Home": 
-    {
-        "amp": [0, 4]
-    },
-    "Amp":
-    {
-        "attack": [0, 1],
-        "decay": [0, 1],
-        "sustain_level": [0, 1],
-        "release": [0, 1],
-    },
-    "Filter":
-    {
-        "cutoff": [0, 2200],
-        "resonance": [1, 0]
-    }
-}
-
 
 button_map = {
     "left_extender": {
@@ -135,11 +121,6 @@ class Scene:
 
         return final_text   
 
-def get_interval(scene_name, value_name):
-    if scene_name in value_intervals.keys() and value_name in value_intervals[scene_name].keys():
-        return value_intervals[scene_name][value_name]
-    else:
-        return None
 
 class DataObject:
     def __init__(self, name, value, scene):
@@ -164,8 +145,14 @@ class DataObject:
                 self.value += amnt
                 update_value = self.interval[0] + (self.interval[1]-self.interval[0])*float(self.value)/100
                 print(self.scene, self.name, self.value, update_value)
-                sc_client.set_param("/" + self.name + "_" + current_track, update_value+0.0001)
+                sc_client.set_param("/" + self.name + "_" + current_track, update_value+0.000001)
                 render_gui()
+    
+    def get_value(self):
+        if self.interval is None:
+            return self.value
+        else:
+            return self.interval[0] + (self.interval[1]-self.interval[0])*float(self.value)/100
 
 
 class ViewModel:
@@ -234,7 +221,6 @@ def bind_encoders():
     global scenes
     global encoders
     global current_track
-    print(len(list(scenes[current_track][current_scene_idx].data.items())))
     l = min([len(encoders), len(list(scenes[current_track][current_scene_idx].data.items()))])
     for i in range(l):
         encoders[i].section = scenes[current_track][current_scene_idx].name
@@ -243,10 +229,10 @@ def bind_encoders():
 
 
 patterns = read_patterns()
-scenes = create_scenes(patterns[0].data)
+scenes = create_scenes(patterns[0].data["track_data"])
 view_model = ViewModel(scenes)
 encoders = [Encoder(view_model), Encoder(view_model), Encoder(view_model), Encoder(view_model), Encoder(view_model), Encoder(view_model), Encoder(view_model), Encoder(view_model)]
-
+sc_client.load_pattern(patterns[0].data)
 
 if RPI_CONTROLLER:
     rpi_encoders = [GPIOZeroEncoder(17, 4, encoders[0]),
@@ -287,9 +273,9 @@ keyboard.add_hotkey('i', lambda: encoders[3].state_change(1))
 
 
 def seq_pressed(idx):
-    patterns[0].data[current_track]["Sequence"]["freq"][idx] = int(not patterns[0].data[current_track]["Sequence"]["freq"][idx])
+    patterns[0].data["track_data"][current_track]["Sequence"]["freq"][idx] = int(not patterns[0].data["track_data"][current_track]["Sequence"]["freq"][idx])
     print(patterns[0].data[current_track]["Sequence"]["freq"])
-    sc_client.set_param("/freq_" + current_track, list(map(lambda x: x if x==1 else "", patterns[0].data[current_track]["Sequence"]["freq"])))
+    sc_client.set_param("/freq_" + current_track, list(map(lambda x: x if x==1 else "", patterns[0].data["track_data"][current_track]["Sequence"]["freq"])))
 
 ## bind sequencer keyboard keys
 def on_seq_press(event):

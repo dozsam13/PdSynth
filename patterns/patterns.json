@@ -1,105 +1,54 @@
 [
     {
-        "Name": "p1",
-        "1":
+        "Name": "test_pattern",
+        "track_data":
         {
-            "Home":
+            "1":
             {
-                "amp": 1,
-                "bufnum": 18,
-                "rate": 1
+                "Home":
+                {
+                    "amp": 20,
+                    "bufnum": 18,
+                    "rate": 1
+                },
+                "Amp":
+                {
+                    "attack": 0,
+                    "release": 100
+                },
+                "Filter":
+                {
+                    "cutoff": 100,
+                    "resonance": 0
+                },
+                "Sequence":
+                {
+                    "freq": [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0]
+                }
             },
-            "Amp":
+            "2":
             {
-                "attack": 0,
-                "decay": 100,
-                "sustain_level": 100,
-                "release": 100
-            },
-            "Filter":
-            {
-                "cutoff": 100,
-                "resonance": 0
-            },
-            "Sequence":
-            {
-                "freq": [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0]
-            }
-        },
-        "2":
-        {
-            "Home":
-            {
-                "amp": 1,
-                "bufnum": 69,
-                "rate": 1   
-            },
-            "Amp":
-            {
-                "attack": 0,
-                "decay": 100,
-                "sustain_level": 100,
-                "release": 100
-            },
-            "Filter":
-            {
-                "cutoff": 100,
-                "resonance": 0
-            },
-            "Sequence":
-            {
-                "freq": [0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0]
-            }
-        },
-        "3":
-        {
-            "Home":
-            {
-                "amp":0,
-                "bufnum": 50,
-                "rate": 1
-            },
-            "Amp":
-            {
-                "attack": 0,
-                "decay": 100,
-                "sustain_level": 100,
-                "release": 100    
-            },
-            "Filter":
-            {
-                "cutoff": 100,
-                "resonance": 0
-            },
-            "Sequence":
-            {
-                "freq": [1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0]
-            }
-        },
-        "4":
-        {
-            "Home":
-            {
-                "amp": 0,
-                "bufnum": 42,
-                "rate": 1  
-            },
-            "Amp":
-            {
-                "attack": 0,
-                "decay": 100,
-                "sustain_level": 100,
-                "release": 100    
-            },
-            "Filter":
-            {
-                "cutoff": 100,
-                "resonance": 0
-            },
-            "Sequence":
-            {
-                "freq": [1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-            }
+                "Home":
+                {
+                    "amp": 20,
+                    "bufnum": 69,
+                    "rate": 1   
+                },
+                "Amp":
+                {
+                    "attack": 0,
+                    "release": 100
+                },
+                "Filter":
+                {
+                    "cutoff": 100,
+                    "resonance": 0
+                },
+                "Sequence":
+                {
+                    "freq": [0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0]
+                }
+            }            
         }
     }
 ]

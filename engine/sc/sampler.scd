@@ -2,7 +2,8 @@ s.boot;
 s.reboot;
 s.freeAll;
 s.doWhenBooted({
-~bs = SoundFile.collectIntoBuffers("/home/dozsam13/dev/PdSynth/samples/emx-sample-pack-50tube/*");
+
+~bs = SoundFile.collectIntoBuffers("/home/jozef1957/dev/PdSynth/samples/emx-sample-pack-50tube/*");
 ~bs[0].path.postln;
 
 (
@@ -17,14 +18,19 @@ SynthDef.new(\sampy, {
 		startPos: \spos.kr(0)
 	);
 	env = Env.new(
-		levels: [0, 1, \sustain_level.kr(1.0), 0], // levels
-		times: [\attack.kr(0.01), \decay.kr(0.3), \release.kr(0.1)],
+		levels: [0, 1, 1, 0], // levels
+		times: [\attack.kr(0.01), \sustain.kr(1.0), \release.kr(0.1)],
 		curve: 'lin'
 	).kr(doneAction: 2);
+	env = Env.perc(attackTime: \attack.kr(0.01), releaseTime: \release.kr(0.1), level: 1.0, curve: -1.0).kr(doneAction: 2);
 
+	env = EnvGen.ar(
+		Env.perc(attackTime: \attack.kr(0.01), releaseTime: \release.kr(0.1), level: 1.0, curve: -1.0),
+		doneAction: 2
+	);
 	//sig = SVF.ar(sig, cutoff: \cutoff.kr(2200.0), res: \resonance.kr(0.1), lowpass: 1.0, bandpass: 0.0, highpass: 0.0, notch: 0.0, peak: 0.0, mul: 1.0, add: 0.0);
 	sig = RLPF.ar(in: sig, freq: \cutoff.kr(2200.0), rq: \resonance.kr(0.01), mul: 1.0, add: 0.0);
-	Out.ar(\out.kr(0), sig*env*\amp.kr(1)*\mute.kr(1));
+	Out.ar(\out.kr(0), env*sig*\amp.kr(1)*\mute.kr(1));
 }).add;
 );
 
@@ -35,7 +41,7 @@ t.schedAbs(t.nextBar, {~postBear.value});
 );
 
 (
-~track_ids = [1, 2, 3, 4];
+~track_ids = [1, 2];
 ~paramDict = Dictionary();
 ~patterns = [];
 ~track_ids.do({
@@ -48,8 +54,7 @@ t.schedAbs(t.nextBar, {~postBear.value});
 	~paramDict.put(("freq_" ++ track_id).asSymbol, Pseq([100, \, \, \], 1));
 	//AMP
 	~paramDict.put(("attack_" ++ track_id).asSymbol, 0.001);
-	~paramDict.put(("decay_" ++ track_id).asSymbol, 1.0);
-	~paramDict.put(("sustain_level" ++ track_id).asSymbol, 1.0);
+	~paramDict.put(("sustain_" ++ track_id).asSymbol, 1.0);
 	~paramDict.put(("release_" ++ track_id).asSymbol, 0.5);
 	//FILTER
 	~paramDict.put(("cutoff_" ++ track_id).asSymbol, 2200.0);
@@ -80,10 +85,6 @@ t.schedAbs(t.nextBar, {~postBear.value});
 		~paramDict[("attack_" ++ track_id).asSymbol] = msg[1];
 	}, "/attack_" ++ track_id);
 
-	OSCdef(("decay_" ++ track_id).asSymbol, { |msg|
-		~paramDict[("decay_" ++ track_id).asSymbol] = msg[1];
-	}, "/decay_" ++ track_id);
-
 	OSCdef(("sustain_" ++ track_id).asSymbol, { |msg|
 		~paramDict[("sustain_" ++ track_id).asSymbol] = msg[1];
 	}, "/sustain_" ++ track_id);
@@ -91,10 +92,6 @@ t.schedAbs(t.nextBar, {~postBear.value});
 	OSCdef(("release_" ++ track_id).asSymbol, { |msg|
 		~paramDict[("release_" ++ track_id).asSymbol] = msg[1];
 	}, "/release_" ++ track_id);
-
-	OSCdef(("sustain_level_" ++ track_id).asSymbol, { |msg|
-		~paramDict[("sustain_level_" ++ track_id).asSymbol] = msg[1];
-	}, "/sustain_level_" ++ track_id);
 
 	OSCdef(("cutoff_" ++ track_id).asSymbol, { |msg|
 		~paramDict[("cutoff_" ++ track_id).asSymbol] = msg[1];
@@ -127,8 +124,7 @@ t.schedAbs(t.nextBar, {~postBear.value});
 		\freq, Pn(Plazy({~paramDict[("freq_" ++ track_id).asSymbol]}), inf),
 		//amp
 		\attack, Pfunc({~paramDict[("attack_" ++ track_id).asSymbol]}),
-		\decay, Pfunc({~paramDict[("decay_" ++ track_id).asSymbol]}),
-		\sustain_level, Pfunc({~paramDict[("sustain_level" ++ track_id).asSymbol]}),
+		\sustain_, Pfunc({~paramDict[("sustain_" ++ track_id).asSymbol]}),
 		\release, Pfunc({~paramDict[("release_" ++ track_id).asSymbol]}),
 		//filter
 		\cutoff, Pfunc({~paramDict[("cutoff_" ++ track_id).asSymbol]}),
@@ -145,9 +141,6 @@ OSCdef(\start_seq, { |msg|
 
 }, "/start_seq");
 
-~players = ~patterns.collect({ |ptn|
-		ptn.play(t)
-});
 OSCdef(\stop_seq, { |msg|
 	~players.do({ |player|
 		player.stop;
@@ -166,15 +159,20 @@ OSCdef(\volume, { |msg|
 )
 })
 
-/*
+
 ~players = ~patterns.collect({ |ptn| ptn.play(t)});
+
 ~players.do({ |player| player.stop;});
+
 ~paramDict[("amp_1").asSymbol] = 1;
 ~paramDict[("amp_2").asSymbol] = 0;
 
-~paramDict[("bufnum_1").asSymbol] = 10;
+~paramDict[("bufnum_1").asSymbol] = 1;
 ~paramDict[("attack_1").asSymbol] = 0.05;
 ~paramDict[("bufnum_2").asSymbol] = msg[1];
+
+~paramDict[("attack_1").asSymbol] = 0.0;
+~paramDict[("sustain_1").asSymbol] = 1.5;
+~paramDict[("release_1").asSymbol] = 1.0;
 s.freeAll;
 s.queryAllNodes;
-*/
