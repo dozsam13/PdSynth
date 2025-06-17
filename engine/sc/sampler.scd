@@ -2,7 +2,7 @@ s.boot;
 s.reboot;
 s.freeAll;
 s.doWhenBooted({
-
+Platform.userExtensionDir;
 ~bs = SoundFile.collectIntoBuffers("/home/jozef1957/dev/PdSynth/samples/emx-sample-pack-50tube/*");
 ~bs[0].path.postln;
 
@@ -17,18 +17,18 @@ SynthDef.new(\sampy, {
 		rate: BufRateScale.kr(\buf.kr(0)) * \rate.kr(1),  //44100/44100
 		startPos: \spos.kr(0)
 	);
-	env = Env.new(
+	/*env = Env.new(
 		levels: [0, 1, 1, 0], // levels
 		times: [\attack.kr(0.01), \sustain.kr(1.0), \release.kr(0.1)],
 		curve: 'lin'
-	).kr(doneAction: 2);
-	env = Env.perc(attackTime: \attack.kr(0.01), releaseTime: \release.kr(0.1), level: 1.0, curve: -1.0).kr(doneAction: 2);
+	).kr(doneAction: 2);*/
 
 	env = EnvGen.ar(
 		Env.perc(attackTime: \attack.kr(0.01), releaseTime: \release.kr(0.1), level: 1.0, curve: -1.0),
 		doneAction: 2
 	);
-	//sig = SVF.ar(sig, cutoff: \cutoff.kr(2200.0), res: \resonance.kr(0.1), lowpass: 1.0, bandpass: 0.0, highpass: 0.0, notch: 0.0, peak: 0.0, mul: 1.0, add: 0.0);
+	//sig = GlitchBPF..ar(in: sig, freq: 440.0, rq: 1.0, mul: 1.0, add: 0.0);
+				sig = CrossoverDistortion.ar(sig, amp: \distortion_amp.kr(0.5), smooth: \distortion_smooth.kr(0.5), mul: 1.0, add: 0);
 	sig = RLPF.ar(in: sig, freq: \cutoff.kr(2200.0), rq: \resonance.kr(0.01), mul: 1.0, add: 0.0);
 	Out.ar(\out.kr(0), env*sig*\amp.kr(1)*\mute.kr(1));
 }).add;
