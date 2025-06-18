@@ -21,6 +21,11 @@
                     "cutoff": 100,
                     "resonance": 0
                 },
+                "Effect":
+                {
+                    "distortion_amp": 0,
+                    "distortion_smooth": 0
+                },
                 "Sequence":
                 {
                     "freq": [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0]
@@ -43,6 +48,11 @@
                 {
                     "cutoff": 100,
                     "resonance": 0
+                },
+                "Effect":
+                {
+                    "distortion_amp": 0,
+                    "distortion_smooth": 0
                 },
                 "Sequence":
                 {

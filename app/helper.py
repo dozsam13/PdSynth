@@ -14,9 +14,13 @@ value_intervals = {
     {
         "cutoff": [0, 2200],
         "resonance": [1, 0]
+    },
+    "Effect":
+    {
+        "distortion_amp": [0, 2],
+        "distortion_smooth": [0, 2]
     }
 }
-
 
 
 def get_interval(scene_name, value_name):

@@ -40,6 +40,11 @@ short_names = {
     {
         "cutoff": "ctf",
         "resonance": "res"
+    },
+    "Effect":
+    {
+        "distortion_amp": "dam",
+        "distortion_smooth": "dsm"
     }
 }
 

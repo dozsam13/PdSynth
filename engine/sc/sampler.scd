@@ -28,7 +28,7 @@ SynthDef.new(\sampy, {
 		doneAction: 2
 	);
 	//sig = GlitchBPF..ar(in: sig, freq: 440.0, rq: 1.0, mul: 1.0, add: 0.0);
-				sig = CrossoverDistortion.ar(sig, amp: \distortion_amp.kr(0.5), smooth: \distortion_smooth.kr(0.5), mul: 1.0, add: 0);
+	sig = CrossoverDistortion.ar(sig, amp: \distortion_amp.kr(0.5), smooth: \distortion_smooth.kr(0.5), mul: 1.0, add: 0);
 	sig = RLPF.ar(in: sig, freq: \cutoff.kr(2200.0), rq: \resonance.kr(0.01), mul: 1.0, add: 0.0);
 	Out.ar(\out.kr(0), env*sig*\amp.kr(1)*\mute.kr(1));
 }).add;
@@ -51,7 +51,7 @@ t.schedAbs(t.nextBar, {~postBear.value});
 	~paramDict.put(("bufnum_" ++ track_id).asSymbol, ~bs[14].bufnum);
 	~paramDict.put(("rate_" ++ track_id).asSymbol, Pseq([1.0], 1));
 	~paramDict.put(("mute_" ++ track_id).asSymbol, 1.0);
-	~paramDict.put(("freq_" ++ track_id).asSymbol, Pseq([100, \, \, \], 1));
+	~paramDict.put(("freq_" ++ track_id).asSymbol, Pseq([\, \, \, \], 1));
 	//AMP
 	~paramDict.put(("attack_" ++ track_id).asSymbol, 0.001);
 	~paramDict.put(("sustain_" ++ track_id).asSymbol, 1.0);
@@ -59,6 +59,9 @@ t.schedAbs(t.nextBar, {~postBear.value});
 	//FILTER
 	~paramDict.put(("cutoff_" ++ track_id).asSymbol, 2200.0);
 	~paramDict.put(("resonance_" ++ track_id).asSymbol, 0.1);
+	//EFFECT
+	~paramDict.put(("distortion_amp_" ++ track_id).asSymbol, 0.0);
+	~paramDict.put(("distortion_smooth_" ++ track_id).asSymbol, 0.0);
 });
 );
 (
@@ -101,6 +104,14 @@ t.schedAbs(t.nextBar, {~postBear.value});
 		~paramDict[("resonance_" ++ track_id).asSymbol] = msg[1];
 	}, "/resonance_" ++ track_id);
 
+	OSCdef(("distortion_smooth_" ++ track_id).asSymbol, { |msg|
+		~paramDict[("distortion_smooth_" ++ track_id).asSymbol] = msg[1];
+	}, "/distortion_smooth_" ++ track_id);
+
+	OSCdef(("distortion_amp_" ++ track_id).asSymbol, { |msg|
+		~paramDict[("distortion_amp_" ++ track_id).asSymbol] = msg[1];
+	}, "/distortion_amp_" ++ track_id);
+
 	OSCdef(("mute_" ++ track_id).asSymbol, { |msg|
 		~paramDict[("mute_" ++ track_id).asSymbol] = msg[1];
 	}, "/mute_" ++ track_id);
@@ -128,7 +139,10 @@ t.schedAbs(t.nextBar, {~postBear.value});
 		\release, Pfunc({~paramDict[("release_" ++ track_id).asSymbol]}),
 		//filter
 		\cutoff, Pfunc({~paramDict[("cutoff_" ++ track_id).asSymbol]}),
-		\resonance, Pfunc({~paramDict[("resonance_" ++ track_id).asSymbol]})
+		\resonance, Pfunc({~paramDict[("resonance_" ++ track_id).asSymbol]}),
+		//effect
+		\distortion_amp, Pfunc({~paramDict[("distortion_amp_" ++ track_id).asSymbol]}),
+		\distortion_smooth, Pfunc({~paramDict[("distortion_smooth_" ++ track_id).asSymbol]})
 	);
 
 });
