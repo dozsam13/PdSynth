@@ -24,7 +24,9 @@
                 "Effect":
                 {
                     "distortion_amp": 0,
-                    "distortion_smooth": 0
+                    "distortion_smooth": 0,
+                    "reverb_send": 0,
+                    "delay_send": 0
                 },
                 "Sequence":
                 {
@@ -52,7 +54,9 @@
                 "Effect":
                 {
                     "distortion_amp": 0,
-                    "distortion_smooth": 0
+                    "distortion_smooth": 0,
+                    "reverb_send": 0,
+                    "delay_send": 0
                 },
                 "Sequence":
                 {

@@ -30,7 +30,10 @@ SynthDef.new(\sampy, {
 	//sig = GlitchBPF..ar(in: sig, freq: 440.0, rq: 1.0, mul: 1.0, add: 0.0);
 	sig = CrossoverDistortion.ar(sig, amp: \distortion_amp.kr(0.5), smooth: \distortion_smooth.kr(0.5), mul: 1.0, add: 0);
 	sig = RLPF.ar(in: sig, freq: \cutoff.kr(2200.0), rq: \resonance.kr(0.01), mul: 1.0, add: 0.0);
-	Out.ar(\out.kr(0), env*sig*\amp.kr(1)*\mute.kr(1));
+	sig = env*sig*\mute.kr(1);
+	Out.ar(\out.kr(0), sig*\amp.kr(1));
+	Out.ar(15, sig*\reverb_send.kr(0));
+	Out.ar(16, sig*\delay_send.kr(0));
 }).add;
 );
 
@@ -62,6 +65,8 @@ t.schedAbs(t.nextBar, {~postBear.value});
 	//EFFECT
 	~paramDict.put(("distortion_amp_" ++ track_id).asSymbol, 0.0);
 	~paramDict.put(("distortion_smooth_" ++ track_id).asSymbol, 0.0);
+	~paramDict.put(("reverb_send_" ++ track_id).asSymbol, 0.0);
+	~paramDict.put(("delay_send_" ++ track_id).asSymbol, 0.0);
 });
 );
 (
@@ -112,6 +117,16 @@ t.schedAbs(t.nextBar, {~postBear.value});
 		~paramDict[("distortion_amp_" ++ track_id).asSymbol] = msg[1];
 	}, "/distortion_amp_" ++ track_id);
 
+	OSCdef(("reverb_send_" ++ track_id).asSymbol, { |msg|
+		msg[1].postln;
+		~paramDict[("reverb_send_" ++ track_id).asSymbol] = msg[1];
+	}, "/reverb_send_" ++ track_id);
+
+	OSCdef(("delay_send_" ++ track_id).asSymbol, { |msg|
+		msg[1].postln;
+		~paramDict[("delay_send_" ++ track_id).asSymbol] = msg[1];
+	}, "/delay_send_" ++ track_id);
+
 	OSCdef(("mute_" ++ track_id).asSymbol, { |msg|
 		~paramDict[("mute_" ++ track_id).asSymbol] = msg[1];
 	}, "/mute_" ++ track_id);
@@ -142,9 +157,10 @@ t.schedAbs(t.nextBar, {~postBear.value});
 		\resonance, Pfunc({~paramDict[("resonance_" ++ track_id).asSymbol]}),
 		//effect
 		\distortion_amp, Pfunc({~paramDict[("distortion_amp_" ++ track_id).asSymbol]}),
-		\distortion_smooth, Pfunc({~paramDict[("distortion_smooth_" ++ track_id).asSymbol]})
+		\distortion_smooth, Pfunc({~paramDict[("distortion_smooth_" ++ track_id).asSymbol]}),
+		\reverb_send, Pfunc({~paramDict[("reverb_send_" ++ track_id).asSymbol]}),
+		\delay_send, Pfunc({~paramDict[("delay_send_" ++ track_id).asSymbol]})
 	);
-
 });
 
 (
@@ -171,6 +187,29 @@ OSCdef(\volume, { |msg|
 );
 
 )
+
+//REVERB
+	(
+		{
+			var sig;
+			sig = In.ar(15, 1);
+			sig = FreeVerb.ar(sig, mix: 0.9, room: 1.8, damp: 1.5);
+			Out.ar(\out.kr(0),sig);
+		}.play;
+	)
+//DELAY
+	(
+		{
+			var sig;
+			sig = In.ar(16, 1);
+			sig = CombN.ar(sig,
+				1.0, // max delay time
+				0.25, // actual delay time (1/4 second)
+				1.0 // decay time (feedback amount)
+    );
+			Out.ar(\out.kr(0), sig);
+		}.play;
+	)
 })
 
 

@@ -18,7 +18,9 @@ value_intervals = {
     "Effect":
     {
         "distortion_amp": [0, 2],
-        "distortion_smooth": [0, 2]
+        "distortion_smooth": [0.2, 2],
+        "reverb_send": [0, 4],
+        "delay_send": [0, 4]
     }
 }
 

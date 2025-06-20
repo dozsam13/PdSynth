@@ -44,7 +44,9 @@ short_names = {
     "Effect":
     {
         "distortion_amp": "dam",
-        "distortion_smooth": "dsm"
+        "distortion_smooth": "dsm",
+        "reverb_send": "rvs",
+        "delay_send": "dls"
     }
 }
 
@@ -157,7 +159,7 @@ class DataObject:
         if self.interval is None:
             return self.value
         else:
-            return self.interval[0] + (self.interval[1]-self.interval[0])*float(self.value)/100
+            return self.interval[0] + (self.interval[1]-self.interval[0])*float(self.value)/100 + 0.0001
 
 
 class ViewModel:
