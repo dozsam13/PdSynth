@@ -157,7 +157,7 @@ class DataObject:
         if update_value is not None:
             sc_client.set_param("/" + self.name + "_" + current_track, update_value)
             if RPI_CONTROLLER:
-                render_param_change(update_value, self.index)
+                render_param_change(str(self.value), self.index)
             render_gui(to_rpi = False)
     
     def get_value(self):
