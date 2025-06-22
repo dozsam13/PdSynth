@@ -158,7 +158,7 @@ class DataObject:
             sc_client.set_param("/" + self.name + "_" + current_track, update_value)
             if RPI_CONTROLLER:
                 render_param_change(update_value, self.index)
-            render_gui(False)
+            render_gui(to_rpi = False)
     
     def get_value(self):
         if self.interval is None:
@@ -215,9 +215,14 @@ def change_scene_to(scn):
     if len(scenes[current_track]) <= scn:
         return
     unbind_encoders()
+    # lcd cleanup
+    if RPI_CONTROLLER:
+        lcd_screen.cleanup(len(scenes[current_scene_idx].data), len(scenes[scn].data))
     current_scene_idx = scn
     bind_encoders()
     render_gui()
+    
+
 
 
 def change_scene(amnt):

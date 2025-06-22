@@ -20,8 +20,11 @@ class LCDScreen:
     self.screen.write_string(value)
 
   def cleanup(old_scene_length, new_scene_length):
+    self.screen.clear()
+    return
     if new_scene_length < old_scene_length:
-      print("cleanup needed")
+      dif = old_scene_length - new_scene_length
+
 
 
 def write_to_lcd(lcd, framebuffer, num_cols):
