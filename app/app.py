@@ -156,7 +156,9 @@ class DataObject:
                 #print(self.scene, self.name, self.value, update_value)
         if update_value is not None:
             sc_client.set_param("/" + self.name + "_" + current_track, update_value)
-            render_gui()
+            if RPI_CONTROLLER:
+                render_param_change(update_value, self.index)
+            render_gui(False)
     
     def get_value(self):
         if self.interval is None:
@@ -184,12 +186,12 @@ def create_scenes(ptn):
         result[trk_id] = scenes
     return result
 
-def render_gui():
+def render_gui(to_rpi=True):
     t = scenes[current_track][current_scene_idx].text()
     t2 = []
     for e in t:
         t2.append(e)#.ljust(20))
-    if RPI_CONTROLLER:
+    if RPI_CONTROLLER and to_rpi:
         lcd_screen.write_lines(t2)
     print(t2[0])
     print(t2[1])
