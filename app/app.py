@@ -113,7 +113,7 @@ class Scene:
     def __init__(self, name, data):
         self.name = name
 
-        self.data = {k : DataObject(k, v, name) for k,v in data.items()}
+        self.data = {(i,(k,v)) : DataObject(k, v, name, i) for i, (k, v) in enumerate(data.items())}
 
     def text(self):
         result = [[], []]
@@ -130,11 +130,12 @@ class Scene:
 
 
 class DataObject:
-    def __init__(self, name, value, scene):
+    def __init__(self, name, value, scene, index):
         self.name = name
         self.value = value
         self.scene = scene
         self.interval = get_interval(scene, name)
+        self.index = index
 
     def text(self):
         v = str(self.value)
@@ -143,17 +144,19 @@ class DataObject:
         return v, short_names[self.scene][self.name]
 
     def change_state(self, amnt):
+        update_value = None
         if self.interval is None:
             self.value += amnt
-            sc_client.set_param("/" + self.name + "_" + current_track, self.value)
-            render_gui()
+            update_value = self.value
+
         else:
             if 0 <= (self.value + amnt) <= 100:
                 self.value += amnt
-                update_value = self.interval[0] + (self.interval[1]-self.interval[0])*float(self.value)/100
-                print(self.scene, self.name, self.value, update_value)
-                sc_client.set_param("/" + self.name + "_" + current_track, update_value+0.000001)
-                render_gui()
+                update_value = self.interval[0] + (self.interval[1]-self.interval[0])*float(self.value)/100+0.000001
+                #print(self.scene, self.name, self.value, update_value)
+        if update_value is not None:
+            sc_client.set_param("/" + self.name + "_" + current_track, update_value)
+            render_gui()
     
     def get_value(self):
         if self.interval is None:
@@ -192,6 +195,12 @@ def render_gui():
     print(t2[1])
     print(t2[2])
     print(t2[3])
+
+def render_param_change(value, index):
+    row = index // 4
+    column = index % 4
+    lcd_screen.write_param_value(row, column, value)
+
 
 def change_track(trk):
     global current_track

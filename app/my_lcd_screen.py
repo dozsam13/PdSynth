@@ -15,6 +15,13 @@ class LCDScreen:
       self.screen.cursor_pos = (i, 0)
       self.screen.write_string(line[:20])
 
+  def write_param_value(row, column, value):
+    self.screen.cursor_pos = (i*2, column*4)
+    self.screen.write_string(value)
+
+  def cleanup(old_scene_length, new_scene_length):
+    if new_scene_length < old_scene_length:
+      print("cleanup needed")
 
 
 def write_to_lcd(lcd, framebuffer, num_cols):
