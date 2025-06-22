@@ -192,6 +192,7 @@ def render_gui(to_rpi=True):
     for e in t:
         t2.append(e)#.ljust(20))
     if RPI_CONTROLLER and to_rpi:
+        print("write lines")
         lcd_screen.write_lines(t2)
     print(t2[0])
     print(t2[1])
@@ -212,12 +213,12 @@ def change_track(trk):
 
 def change_scene_to(scn):
     global current_scene_idx
-    if len(scenes[current_track]) <= scn:
-        return
+
     unbind_encoders()
     # lcd cleanup
     if RPI_CONTROLLER:
-        lcd_screen.cleanup(len(scenes[current_scene_idx].data), len(scenes[scn].data))
+        print(current_scene_idx, scn,len(scenes))
+        lcd_screen.cleanup()#len(scenes[current_scene_idx].data), len(scenes[scn].data))
     current_scene_idx = scn
     bind_encoders()
     render_gui()
