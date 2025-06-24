@@ -4,14 +4,17 @@ s.freeAll;
 
 s.doWhenBooted({
 
+~bs = SoundFile.collectIntoBuffers("/home/jozef1957/dev/PdSynth/samples/emx-sample-pack-50tube/*");
+
 MIDIClient.init;
 MIDIIn.connect(0, MIDIClient.sources.detectIndex{|src| src.device.contains("USB")});
 MIDISyncClock.init;
-//MIDISyncClock.tempo;
+//start midi seq
 
-Platform.userExtensionDir;
-~bs = SoundFile.collectIntoBuffers("/home/jozef1957/dev/PdSynth/samples/emx-sample-pack-50tube/*");
-~bs[0].path.postln;
+MIDISyncClock.tempo;
+
+
+
 
 (
 (
@@ -192,6 +195,20 @@ OSCdef(\stop_seq, { |msg|
 	});
 }, "/stop_seq");
 
+~startFunc = MIDIFunc.start({ |val|
+    "MIDI START received".postln;
+    ~players = ~patterns.collect({ |ptn|
+		//ptn.play(t)
+		ptn.play(MIDISyncClock)
+	});
+});
+
+~stopFunc = MIDIFunc.stop({ |val|
+    "MIDI STOP received".postln;
+    ~players.do({ |player|
+		player.stop;
+	});
+});
 OSCdef(\bpm, { |msg|
 	t.tempo = msg[1]/60;
 }, "/bpm");
@@ -201,33 +218,39 @@ OSCdef(\volume, { |msg|
 }, "/volume");
 );
 
+//---------------------------------------------EFFECTS----------------------------------------------------
+//REVERB
+(
+(
+	{
+		var sig;
+		sig = In.ar(15, 1);
+		sig = FreeVerb.ar(sig, mix: 0.9, room: 1.8, damp: 1.5);
+		Out.ar(\out.kr(0),sig);
+	}.play;
+);
+//DELAY
+(
+	{
+		var sig;
+		sig = In.ar(16, 1);
+		sig = CombN.ar(sig,
+			1.0, // max delay time
+			0.25, // actual delay time (1/4 second)
+			1.0 // decay time (feedback amount)
+		);
+	Out.ar(\out.kr(0), sig);
+	}.play;
+);
+);
+
 )
 
-//REVERB
-	(
-		{
-			var sig;
-			sig = In.ar(15, 1);
-			sig = FreeVerb.ar(sig, mix: 0.9, room: 1.8, damp: 1.5);
-			Out.ar(\out.kr(0),sig);
-		}.play;
-	)
-//DELAY
-	(
-		{
-			var sig;
-			sig = In.ar(16, 1);
-			sig = CombN.ar(sig,
-				1.0, // max delay time
-				0.25, // actual delay time (1/4 second)
-				1.0 // decay time (feedback amount)
-    );
-			Out.ar(\out.kr(0), sig);
-		}.play;
-	)
+
+
 })
 
-
+/*
 ~players = ~patterns.collect({ |ptn| ptn.play(t)});
 
 ~players.do({ |player| player.stop;});
@@ -244,3 +267,4 @@ OSCdef(\volume, { |msg|
 ~paramDict[("release_1").asSymbol] = 1.0;
 s.freeAll;
 s.queryAllNodes;
+*/
