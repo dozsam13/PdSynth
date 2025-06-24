@@ -2,10 +2,12 @@
 value_intervals = {
     "Home": 
     {
-        "amp": [0, 4]
+        "amp": [0, 4],
+        "rate": [0, 16],
     },
     "Amp":
     {
+        "start_pos": [0,10000],
         "attack": [0, 1],
         "sustain": [0, 2],
         "release": [0, 1],

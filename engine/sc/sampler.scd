@@ -2,6 +2,10 @@ s.boot;
 s.reboot;
 s.freeAll;
 s.doWhenBooted({
+MIDIClient.init;
+MIDIIn.connect(0, MIDIClient.sources.detectIndex{|src| src.device.contains("USB")});
+MIDISyncClock.init;
+
 Platform.userExtensionDir;
 ~bs = SoundFile.collectIntoBuffers("/home/jozef1957/dev/PdSynth/samples/emx-sample-pack-50tube/*");
 ~bs[0].path.postln;
@@ -15,7 +19,7 @@ SynthDef.new(\sampy, {
 		numChannels: 2,
 		bufnum: \buf.kr(0),
 		rate: BufRateScale.kr(\buf.kr(0)) * \rate.kr(1),  //44100/44100
-		startPos: \spos.kr(0)
+		startPos: \start_pos.kr(50)
 	);
 	/*env = Env.new(
 		levels: [0, 1, 1, 0], // levels
@@ -56,6 +60,7 @@ t.schedAbs(t.nextBar, {~postBear.value});
 	~paramDict.put(("mute_" ++ track_id).asSymbol, 1.0);
 	~paramDict.put(("freq_" ++ track_id).asSymbol, Pseq([\, \, \, \], 1));
 	//AMP
+	~paramDict.put(("start_pos_" ++ track_id).asSymbol, 0.0);
 	~paramDict.put(("attack_" ++ track_id).asSymbol, 0.001);
 	~paramDict.put(("sustain_" ++ track_id).asSymbol, 1.0);
 	~paramDict.put(("release_" ++ track_id).asSymbol, 0.5);
@@ -88,6 +93,11 @@ t.schedAbs(t.nextBar, {~postBear.value});
 		//msg[1].postln;
 		~paramDict[("rate_" ++ track_id).asSymbol] = Pseq([msg[1]], 1);
 	}, "/rate_" ++ track_id);
+
+	OSCdef(("start_pos_" ++ track_id).asSymbol, { |msg|
+		msg[1].postln;
+		~paramDict[("start_pos_" ++ track_id).asSymbol] = msg[1];
+	}, "/start_pos_" ++ track_id);
 
 	OSCdef(("attack_" ++ track_id).asSymbol, { |msg|
 		~paramDict[("attack_" ++ track_id).asSymbol] = msg[1];
@@ -149,6 +159,7 @@ t.schedAbs(t.nextBar, {~postBear.value});
 		\mute, Pfunc({~paramDict[("mute_" ++ track_id).asSymbol]}),
 		\freq, Pn(Plazy({~paramDict[("freq_" ++ track_id).asSymbol]}), inf),
 		//amp
+		\start_pos, Pfunc({~paramDict[("start_pos_" ++ track_id).asSymbol]}),
 		\attack, Pfunc({~paramDict[("attack_" ++ track_id).asSymbol]}),
 		\sustain_, Pfunc({~paramDict[("sustain_" ++ track_id).asSymbol]}),
 		\release, Pfunc({~paramDict[("release_" ++ track_id).asSymbol]}),

@@ -32,6 +32,7 @@ short_names = {
     },
     "Amp":
     {
+        "start_pos": "sps",
         "attack": "atk",
         "sustain": "stn",
         "release": "rls"

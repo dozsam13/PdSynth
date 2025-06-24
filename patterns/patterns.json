@@ -13,6 +13,7 @@
                 },
                 "Amp":
                 {
+                    "start_pos": 0,
                     "attack": 0,
                     "release": 100
                 },
@@ -43,6 +44,7 @@
                 },
                 "Amp":
                 {
+                    "start_pos": 0,
                     "attack": 0,
                     "release": 100
                 },
