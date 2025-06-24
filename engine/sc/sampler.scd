@@ -1,10 +1,13 @@
 s.boot;
 s.reboot;
 s.freeAll;
+
 s.doWhenBooted({
+
 MIDIClient.init;
 MIDIIn.connect(0, MIDIClient.sources.detectIndex{|src| src.device.contains("USB")});
 MIDISyncClock.init;
+//MIDISyncClock.tempo;
 
 Platform.userExtensionDir;
 ~bs = SoundFile.collectIntoBuffers("/home/jozef1957/dev/PdSynth/samples/emx-sample-pack-50tube/*");
@@ -177,7 +180,8 @@ t.schedAbs(t.nextBar, {~postBear.value});
 (
 OSCdef(\start_seq, { |msg|
 	~players = ~patterns.collect({ |ptn|
-		ptn.play(t)
+		//ptn.play(t)
+		ptn.play(MIDISyncClock)
 	});
 
 }, "/start_seq");
