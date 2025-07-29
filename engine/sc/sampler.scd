@@ -1,15 +1,14 @@
 s.boot;
-s.reboot;
-s.freeAll;
+//s.reboot;
+//s.freeAll;
 
 s.doWhenBooted({
 
-~bs = SoundFile.collectIntoBuffers("/home/jozef1957/dev/PdSynth/samples/emx-sample-pack-50tube/*");
+~bs = SoundFile.collectIntoBuffers("/home/dozsam13/dev/PdSynth/samples/emx-sample-pack-50tube/*");
 
 MIDIClient.init;
 MIDIIn.connect(0, MIDIClient.sources.detectIndex{|src| src.device.contains("USB")});
 MIDISyncClock.init;
-//start midi seq
 
 MIDISyncClock.tempo;
 

@@ -7,6 +7,7 @@ import time
 from enum import Enum
 import argparse
 from helper import get_interval
+from sshkeyboard import listen_keyboard
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--rpi', action='store_true', default=False, 
@@ -273,11 +274,12 @@ seq_running = False
 def seq_start_stop():
     global seq_running
     if not seq_running:
+        print("starting sequencer")
         sc_client.start_sequencer()
     else :
         sc_client.stop_sequencer()
+        print("stopping sequencer")
     seq_running = not seq_running
-    print("space pressed")
 
 keyboard.add_hotkey('space', seq_start_stop)
 keyboard.add_hotkey('x', lambda: change_track(1))
@@ -320,6 +322,7 @@ if RPI_CONTROLLER:
     menu_extender_address = 0x23
     l_extender_adress = 0x26
     r_extender_adress = 0x25
+
 
 def find_all_indices(lst, element):
     indices = []
@@ -385,6 +388,7 @@ def button_pressed_callback(a):
     button_model.r_extender = r_extender_bin
     button_model.menu_extender = menu_extender_bin
 
+
 if RPI_CONTROLLER:
     import pigpio
     pi = pigpio.pi()
@@ -393,5 +397,6 @@ if RPI_CONTROLLER:
     button1 = Button(21)
     button1.when_pressed = button_pressed_callback
 
+seq_start_stop()
 while True:
     time.sleep(1)
