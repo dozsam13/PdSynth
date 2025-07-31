@@ -32,3 +32,11 @@ def get_interval(scene_name, value_name):
         return value_intervals[scene_name][value_name]
     else:
         return None
+
+def preprocess_button_map_config(config):
+    button_map = {}
+    for k in config["button_map"].keys():
+        button_map[k] = {}
+        for e in config["button_map"][k]:
+            button_map[k][int(e)] = config["button_map"][k][e]
+    return button_map

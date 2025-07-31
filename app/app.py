@@ -6,7 +6,7 @@ import keyboard
 import time
 from enum import Enum
 import argparse
-from helper import get_interval
+from helper import get_interval, preprocess_button_map_config
 from sshkeyboard import listen_keyboard
 
 parser = argparse.ArgumentParser()
@@ -24,66 +24,10 @@ if RPI_CONTROLLER:
     from gpiozero import Button
     import RPi.GPIO as GPIO
 
-short_names = {
-    "Home":
-    {
-        "amp": "amp",
-        "bufnum": "buf",
-        "rate": "rte",
-    },
-    "Amp":
-    {
-        "start_pos": "sps",
-        "attack": "atk",
-        "sustain": "stn",
-        "release": "rls"
-    },
-    "Filter":
-    {
-        "cutoff": "ctf",
-        "resonance": "res"
-    },
-    "Effect":
-    {
-        "distortion_amp": "dam",
-        "distortion_smooth": "dsm",
-        "reverb_send": "rvs",
-        "delay_send": "dls"
-    }
-}
-
-button_map = {
-    "left_extender": {
-        4: 0,
-        1: 1,
-        3: 2,
-        5: 3,
-        0: 8,
-        2: 9,
-        6: 10,
-        7: 11
-    },
-    "right_extender": {
-        7: 4,
-        3: 5,
-        1: 6,
-        4: 7,
-        5: 12,
-        6: 13,
-        2: 14,
-        0: 15
-    },
-    "menu_extender": {
-    	4: 0,
-    	0: 1,
-    	1: 2,
-    	2: 3,
-    	3: 4,
-    	7: None, #mute
-    	6: None  #func
-    }
-}
-
+with open('app/config.json', 'r') as file:
+    config = json.load(file)
+short_names = config["short_names"]
+button_map = preprocess_button_map_config(config)
 
 current_track = "1"
 current_scene_idx = 0
@@ -142,7 +86,7 @@ class DataObject:
     def text(self):
         v = str(self.value)
         if len(v) < 3:
-            v = "{:<3}".format(v)
+            v = "{:>3}".format(v)
         return v, short_names[self.scene][self.name]
 
     def change_state(self, amnt):
@@ -155,13 +99,17 @@ class DataObject:
             if 0 <= (self.value + amnt) <= 100:
                 self.value += amnt
                 update_value = self.interval[0] + (self.interval[1]-self.interval[0])*float(self.value)/100+0.000001
-                #print(self.scene, self.name, self.value, update_value)
         if update_value is not None:
             sc_client.set_param("/" + self.name + "_" + current_track, update_value)
             if RPI_CONTROLLER:
-                render_param_change(str(self.value), self.index)
+                render_param_change(self.pad_to_length(str(self.value)), self.index)
             render_gui(to_rpi = False)
-    
+
+    def pad_to_length(self, v):
+        if len(v) < 3:
+            v = "{:>3}".format(v)
+        return v
+
     def get_value(self):
         if self.interval is None:
             return self.value
@@ -204,6 +152,8 @@ def render_gui(to_rpi=True):
 def render_param_change(value, index):
     row = index // 4
     column = index % 4
+
+
     lcd_screen.write_param_value(row, column, value)
 
 
