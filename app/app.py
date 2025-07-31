@@ -1,6 +1,6 @@
 import json
 from pattern import Pattern
-from my_encoder import Encoder
+from param_encoder import Encoder
 from client.sc_client import SuperColliderClient
 import keyboard
 import time
@@ -19,7 +19,7 @@ RPI_CONTROLLER = args.rpi
 
 sc_client = SuperColliderClient()
 if RPI_CONTROLLER:
-    from my_lcd_screen import LCDScreen
+    from lcd_screen import LCDScreen
     from encoder import GPIOZeroEncoder
     from gpiozero import Button
     import RPi.GPIO as GPIO

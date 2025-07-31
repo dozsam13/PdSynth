@@ -1,6 +1,3 @@
-
-
-
 class Encoder:
 	def __init__(self, view_model):
 		self.section = None
