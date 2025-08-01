@@ -3,6 +3,7 @@ s.latency = nil;
 //s.reboot;
 //s.freeAll;
 //jackd -R -d alsa -d hw:3 -p64
+//midisnoop
 
 s.doWhenBooted({
 
@@ -10,11 +11,13 @@ s.doWhenBooted({
 
 MIDIClient.init;
 MIDIIn.connect(0, MIDIClient.sources.detectIndex{|src| src.device.contains("USB")});
+
+~midiOutIndex = MIDIClient.destinations.detectIndex{|src| src.device.contains("USB")};
+~midiOut = MIDIOut(~midiOutIndex, MIDIClient.destinations[~midiOutIndex].uid); // .latency_(Server.default.latency);
+
 MIDISyncClock.init;
 
 MIDISyncClock.tempo;
-
-~midiOut = MIDIOut(0, MIDIClient.sources.detectIndex{|src| src.device.contains("USB")}).latency_(Server.default.latency);
 
 
 
@@ -146,8 +149,6 @@ t.schedAbs(t.nextBar, {~postBear.value});
 	}, "/delay_send_" ++ track_id);
 
 	OSCdef(("mute_" ++ track_id).asSymbol, { |msg|
-		("/mute_" ++ track_id).postln;
-		msg[1].postln;
 		~paramDict[("mute_" ++ track_id).asSymbol] = msg[1];
 	}, "/mute_" ++ track_id);
 
@@ -186,18 +187,20 @@ t.schedAbs(t.nextBar, {~postBear.value});
 
 (
 OSCdef(\start_seq, { |msg|
+	"starting sequencer".postln;
 	~players = ~patterns.collect({ |ptn|
 		ptn.play(t)
 		//ptn.play(MIDISyncClock)
 	});
-	~midiOut.start()
+	~midiOut.start;
 }, "/start_seq");
 
 OSCdef(\stop_seq, { |msg|
+	"stopping sequencer".postln;
 	~players.do({ |player|
 		player.stop;
 	});
-	~midiOut.stop()
+	~midiOut.stop;
 }, "/stop_seq");
 
 ~startFunc = MIDIFunc.start({ |val|
