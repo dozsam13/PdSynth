@@ -131,7 +131,7 @@ def create_scenes(ptn):
     for trk_id, pattern in ptn.items():
         scenes = []
         for scene_name, scene_data in pattern.items():
-            if scene_name not in {"Name", "Sequence"}:
+            if scene_name not in {"Name", "Sequence", "Mute"}:
                 scenes.append(Scene(scene_name, scene_data))
         result[trk_id] = scenes
     return result
@@ -140,7 +140,7 @@ def render_gui(to_rpi=True):
     t = scenes[current_track][current_scene_idx].text()
     t2 = []
     for e in t:
-        t2.append(e)#.ljust(20))
+        t2.append(e)
     if RPI_CONTROLLER and to_rpi:
         print("write lines")
         lcd_screen.write_lines(t2)
@@ -156,6 +156,10 @@ def render_param_change(value, index):
 
     lcd_screen.write_param_value(row, column, value)
 
+def mute_track(trk):
+    v = int(not patterns[0].data["track_data"][str(trk)]["Mute"])
+    patterns[0].data["track_data"][str(trk)]["Mute"] = v
+    sc_client.mute_track(trk, v)
 
 def change_track(trk):
     global current_track
@@ -176,8 +180,6 @@ def change_scene_to(scn):
     render_gui()
     
 
-
-
 def change_scene(amnt):
     global current_scene_idx
     global current_track
@@ -192,6 +194,7 @@ def unbind_encoders():
         encoder.section = None
         encoder.param = None
 
+
 def bind_encoders():
     global current_scene_idx
     global scenes
@@ -201,7 +204,6 @@ def bind_encoders():
     for i in range(l):
         encoders[i].section = scenes[current_track][current_scene_idx].name
         encoders[i].param = list(scenes[current_track][current_scene_idx].data.items())[i][0]
-
 
 
 patterns = read_patterns()
@@ -251,7 +253,8 @@ keyboard.add_hotkey('i', lambda: encoders[3].state_change(1))
 
 def seq_pressed(idx):
     patterns[0].data["track_data"][current_track]["Sequence"]["freq"][idx] = int(not patterns[0].data["track_data"][current_track]["Sequence"]["freq"][idx])
-    print(patterns[0].data[current_track]["Sequence"]["freq"])
+
+    print(patterns[0].data["track_data"][current_track]["Sequence"]["freq"])
     sc_client.set_param("/freq_" + current_track, list(map(lambda x: x if x==1 else "", patterns[0].data["track_data"][current_track]["Sequence"]["freq"])))
 
 ## bind sequencer keyboard keys
@@ -301,6 +304,7 @@ def keep_only_zeros(diff_indexes, extender_bin):
 
 def button_pressed_callback(a):
     global interrupt_counter
+    global current_track
     interrupt_counter += 1
     
     print("INTERRUPT RECEIVED", flush=True)
@@ -314,21 +318,14 @@ def button_pressed_callback(a):
     l_ext_diffs = keep_only_zeros(find_differences(button_model.l_extender, l_extender_bin), l_extender_bin)
     r_ext_diffs = keep_only_zeros(find_differences(button_model.r_extender, r_extender_bin), r_extender_bin)
     menu_ext_diffs = keep_only_zeros(find_differences(button_model.menu_extender, menu_extender_bin), menu_extender_bin)
-    for dif in l_ext_diffs:
-    	if menu_extender_bin[7] == "0":
-    		print("muting track: ", button_map["left_extender"][dif] + 1)
-    	elif menu_extender_bin[6] == "0":
-    		change_track(button_map["left_extender"][dif] + 1)
-    	else:
-    		seq_pressed(button_map["left_extender"][dif])
-
-    for dif in r_ext_diffs:
-    	if menu_extender_bin[7] == "0":
-    		print("muting track: ", button_map["right_extender"][dif] + 1)
-    	elif menu_extender_bin[6] == "0":
-    		change_track(button_map["right_extender"][dif] + 1)
-    	else:
-    		seq_pressed(button_map["right_extender"][dif])
+    for (extender_name, diffs) in [("left_extender", l_ext_diffs), ("right_extender", r_ext_diffs)]:
+        for dif in diffs:
+            if menu_extender_bin[7] == "0":
+                mute_track(button_map[extender_name][dif] + 1)
+            elif menu_extender_bin[6] == "0":
+                change_track(button_map[extender_name][dif] + 1)
+            else:
+                seq_pressed(button_map[extender_name][dif])
 
     for dif in menu_ext_diffs:
     	if dif < 5:
@@ -347,6 +344,5 @@ if RPI_CONTROLLER:
     button1 = Button(21)
     button1.when_pressed = button_pressed_callback
 
-seq_start_stop()
 while True:
     time.sleep(1)

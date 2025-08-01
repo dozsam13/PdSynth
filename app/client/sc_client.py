@@ -40,6 +40,9 @@ class SuperColliderClient:
 
 	def set_bpm(self, bpm):
 		self.client.send_message("/bpm", bpm)
+	
+	def mute_track(self, trk, value):
+		self.set_param(f"/mute_{trk}", value)
 
 	def stop(self):
 		self.osc_server.shutdown()
@@ -50,28 +53,25 @@ class SuperColliderClient:
 
 		for track_id in track_data.keys():
 			for scene_name in track_data[track_id].keys():
-				for param_name, param_value in track_data[track_id][scene_name].items():
-					if not scene_name == "Sequence":
-						interval = get_interval(scene_name, param_name)
-						if interval is None:
-							value = param_value
-						else:
-							value = interval[0] + (interval[1]-interval[0])*float(param_value)/100
-						self.set_param("/" + param_name + "_" + track_id, value)
-					else:
-						self.set_param("/freq_" + track_id, list(map(lambda x: x if x==1 else "", track_data[track_id]["Sequence"]["freq"])))
-
-
+				if scene_name != "Mute":
+					for param_name, param_value in track_data[track_id][scene_name].items():
+						if not scene_name in {"Sequence"}:
+							interval = get_interval(scene_name, param_name)
+							if interval is None:
+								value = param_value
+							else:
+								value = interval[0] + (interval[1]-interval[0])*float(param_value)/100
+							self.set_param("/" + param_name + "_" + track_id, value)
+						elif scene_name == "Sequence":
+							self.set_param("/freq_" + track_id, list(map(lambda x: x if x==1 else "", track_data[track_id]["Sequence"]["freq"])))
+				else:
+					self.mute_track(track_id, track_data[track_id][scene_name])
 
 
 if __name__=="__main__":
 	sc_client = SuperColliderClient()
 
-	#sc_client.start_sequencer()
-	#sc_client.set_param("/freq_1", [0, "", "", "",0, "", "", "", 0, "", 0, "", 0, "", "", ""])
-	#sc_client.set_param("/freq_1", [0, "", "", ""])
-	sc_client.stop_sequencer()
-	exit()
+	sc_client.start_sequencer()
 
 	sc_client.set_bpm(50)
 	time.sleep(15)
@@ -80,6 +80,5 @@ if __name__=="__main__":
 	try:
 		while True:
 			time.sleep(1)
-			print("loop")
 	except KeyboardInterrupt:
 		sc_client.stop()

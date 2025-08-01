@@ -1,7 +1,8 @@
 s.boot;
+s.latency = nil;
 //s.reboot;
 //s.freeAll;
-//jackd -R -d alsa -d hw:3
+//jackd -R -d alsa -d hw:3 -p64
 
 s.doWhenBooted({
 
@@ -9,10 +10,11 @@ s.doWhenBooted({
 
 MIDIClient.init;
 MIDIIn.connect(0, MIDIClient.sources.detectIndex{|src| src.device.contains("USB")});
-//MIDISyncClock.init;
+MIDISyncClock.init;
 
-//MIDISyncClock.tempo;
+MIDISyncClock.tempo;
 
+~midiOut = MIDIOut(0, MIDIClient.sources.detectIndex{|src| src.device.contains("USB")}).latency_(Server.default.latency);
 
 
 
@@ -38,7 +40,7 @@ SynthDef.new(\sampy, {
 		doneAction: 2
 	);
 	//sig = GlitchBPF..ar(in: sig, freq: 440.0, rq: 1.0, mul: 1.0, add: 0.0);
-	//sig = CrossoverDistortion.ar(sig, amp: \distortion_amp.kr(0.5), smooth: \distortion_smooth.kr(0.5), mul: 1.0, add: 0);
+	sig = CrossoverDistortion.ar(sig, amp: \distortion_amp.kr(0.5), smooth: \distortion_smooth.kr(0.5), mul: 1.0, add: 0);
 	sig = RLPF.ar(in: sig, freq: \cutoff.kr(2200.0), rq: \resonance.kr(0.01), mul: 1.0, add: 0.0);
 	sig = env*sig*\mute.kr(1);
 	Out.ar(\out.kr(0), sig*\amp.kr(1));
@@ -144,6 +146,8 @@ t.schedAbs(t.nextBar, {~postBear.value});
 	}, "/delay_send_" ++ track_id);
 
 	OSCdef(("mute_" ++ track_id).asSymbol, { |msg|
+		("/mute_" ++ track_id).postln;
+		msg[1].postln;
 		~paramDict[("mute_" ++ track_id).asSymbol] = msg[1];
 	}, "/mute_" ++ track_id);
 
@@ -186,20 +190,21 @@ OSCdef(\start_seq, { |msg|
 		ptn.play(t)
 		//ptn.play(MIDISyncClock)
 	});
-
+	~midiOut.start()
 }, "/start_seq");
 
 OSCdef(\stop_seq, { |msg|
 	~players.do({ |player|
 		player.stop;
 	});
+	~midiOut.stop()
 }, "/stop_seq");
 
 ~startFunc = MIDIFunc.start({ |val|
     "MIDI START received".postln;
     ~players = ~patterns.collect({ |ptn|
-		ptn.play(t)
-		//ptn.play(MIDISyncClock)
+		//ptn.play(t)
+		ptn.play(MIDISyncClock)
 	});
 });
 
