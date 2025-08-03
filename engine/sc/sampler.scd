@@ -55,7 +55,7 @@ SynthDef.new(\sampy, {
 (
 t = TempoClock.new(200/60).permanent_(true);
 ~postBeat = {t.beats.postln;1;};
-t.schedAbs(t.nextBar, {~postBear.value});
+t.schedAbs(t.nextBar, {~midiOut.midiClock;});
 );
 
 (

@@ -1,9 +1,10 @@
-s.boot;
+s.reboot;
 MIDIClient.init;
 MIDIClient.destinations;
+MIDIClient.externalSources;
 
-~midiOutIndex = MIDIClient.destinations.detectIndex{|src| src.device.contains("USB")}
-~midiOut = MIDIOut(~midiOutIndex, MIDIClient.destinations[~midiOutIndex].uid);
+~midiPort = MIDIClient.destinations.detectIndex{|src| src.device.contains("USB")}
+~midiOut = MIDIOut(~midiPort, MIDIClient.destinations[~midiPort].uid);
 ~midiOut.start;
 ~midiOut.midiClock
 ~midiOut.stop;

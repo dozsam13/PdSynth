@@ -98,12 +98,15 @@ class DataObject:
         else:
             if 0 <= (self.value + amnt) <= 100:
                 self.value += amnt
-                update_value = self.interval[0] + (self.interval[1]-self.interval[0])*float(self.value)/100+0.000001
+                update_value = self.get_interval_value()
         if update_value is not None:
             sc_client.set_param("/" + self.name + "_" + current_track, update_value)
             if RPI_CONTROLLER:
                 render_param_change(self.pad_to_length(str(self.value)), self.index)
             render_gui(to_rpi = False)
+
+    def get_interval_value(self):
+        return self.interval[0] + (self.interval[1]-self.interval[0])*float(self.value)/100+0.000001
 
     def pad_to_length(self, v):
         if len(v) < 3:
@@ -228,7 +231,7 @@ def seq_start_stop():
     if not seq_running:
         print("starting sequencer")
         sc_client.start_sequencer()
-    else :
+    else:
         sc_client.stop_sequencer()
         print("stopping sequencer")
     seq_running = not seq_running
