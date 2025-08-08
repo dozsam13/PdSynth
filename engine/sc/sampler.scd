@@ -54,8 +54,13 @@ SynthDef.new(\sampy, {
 
 (
 t = TempoClock.new(200/60).permanent_(true);
-~postBeat = {t.beats.postln;1;};
-t.schedAbs(t.nextBar, {~midiOut.midiClock;});
+
+~sendMidiClock = { |beat|
+    ~midiOut.midiClock;
+    t.schedAbs(beat + (1/24);, ~sendMidiClock);
+};
+
+t.schedAbs(t.beats.ceil, ~sendMidiClock);
 );
 
 (
@@ -158,7 +163,6 @@ t.schedAbs(t.nextBar, {~midiOut.midiClock;});
 		seq.postln;
 		~paramDict[("freq_" ++ track_id).asSymbol] = Pseq(seq, 1);
 	}, "/freq_" ++ track_id);
-
 
 	// Create Pattern for track
 	Pbind(
