@@ -1,6 +1,10 @@
 [
     {
-        "Name": "test_pattern",
+        "Global":
+        {
+            "Name": "test_pattern",
+            "bpm": 185
+        },
         "track_data":
         {
             "1":

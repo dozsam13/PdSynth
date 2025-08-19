@@ -48,7 +48,7 @@ class SuperColliderClient:
 		self.osc_server.shutdown()
 		#self.osc_server_thread.join()
 
-	def load_pattern(self, pattern):
+	def load_pattern(self, pattern, value_intervals):
 		track_data = pattern["track_data"]
 
 		for track_id in track_data.keys():
@@ -56,7 +56,7 @@ class SuperColliderClient:
 				if scene_name != "Mute":
 					for param_name, param_value in track_data[track_id][scene_name].items():
 						if not scene_name in {"Sequence"}:
-							interval = get_interval(scene_name, param_name)
+							interval = get_interval(value_intervals, scene_name, param_name)
 							if interval is None:
 								value = param_value
 							else:

@@ -1,5 +1,4 @@
 import json
-from pattern import Pattern
 from param_encoder import Encoder
 from client.sc_client import SuperColliderClient
 import keyboard
@@ -12,12 +11,14 @@ from sshkeyboard import listen_keyboard
 parser = argparse.ArgumentParser()
 parser.add_argument('--rpi', action='store_true', default=False, 
                     help='Use RaspberryPI hardware')
+parser.add_argument('--cli', action='store_true', default=False, 
+                    help='Use command line interface')
 args = parser.parse_args()
 
 
 RPI_CONTROLLER = args.rpi
+COMMAND_LINE_INTERFACE = args.cli
 
-sc_client = SuperColliderClient()
 if RPI_CONTROLLER:
     from lcd_screen import LCDScreen
     from encoder import GPIOZeroEncoder
@@ -28,6 +29,10 @@ with open('app/config.json', 'r') as file:
     config = json.load(file)
 short_names = config["short_names"]
 button_map = preprocess_button_map_config(config)
+value_intervals = config["value_intervals"]
+
+
+sc_client = SuperColliderClient()
 
 current_track = "1"
 current_scene_idx = 0
@@ -38,14 +43,7 @@ if RPI_CONTROLLER:
 def read_patterns():
     with open('patterns/patterns.json', 'r') as file:
         data = json.load(file)
-    patterns = []
-    for pattern_data in data:
-        pattern = Pattern()
-        pattern_data
-        pattern_data.pop('Name', None)
-        pattern.data = pattern_data
-        patterns.append(pattern)
-    return patterns
+    return data
 
 class ButtonModel:
 	def __init__(self):
@@ -58,8 +56,7 @@ button_model = ButtonModel()
 class Scene:
     def __init__(self, name, data):
         self.name = name
-
-        self.data = {(i,(k,v)) : DataObject(k, v, name, i) for i, (k, v) in enumerate(data.items())}
+        self.data = {(i,(k,v)) : PatternDataObject(k, v, name, i) for i, (k, v) in enumerate(data.items())}
 
     def text(self):
         result = [[], []]
@@ -72,22 +69,92 @@ class Scene:
 
         final_text = [values[:16], texts[:16], values[16:], texts[16:]]
 
-        return final_text   
+        return final_text
+
+class GlobalScene:
+    def __init__(self, data_objects):
+        self.data_objects = data_objects
+
+    def text(self):
+        result = [[], [], [], []]
+        for i, data_obj_row in enumerate(data_objects):
+            for data_obj in data_obj_row:
+                value, label = data_obj.text()
+                result[i*2].append(value)
+                result[i*2+1].append(label)
+        return result
+
+class AbstractDataObject:
+    def __init__(self):
+        pass
+
+    def text(self):
+        return "", ""
+
+    def change_state(self, amnt):
+        pass
+
+    def pad_to_length(self, v, n):
+        if len(v) < n:
+            v = "{:>n}".format(v)
+        return v
+
+class PatternNameDataObject(AbstractDataObject):
+    def __init__(self, patterns, sc_client, current_pattern_index, index):
+        super()
+        self.sc_client = sc_client
+        self.patterns = patterns
+        self.current_pattern_index = current_pattern_index
+        self.index = index
+
+    def text(self):
+        return self.patterns[self.current_pattern_index]["Global"]["Name"], "pattern"
+
+    def change_state(self, amnt):
+        self.current_pattern_index += amnt
+        self.current_pattern_index %= len(self.patterns)
+
+        #self.sc_client.load_pattern(None, value_intervals)
+        if RPI_CONTROLLER:
+            render_param_change(self.pad_to_length(str(self.value), 11), self.index)
+        render_gui(to_rpi = False)
 
 
-class DataObject:
-    def __init__(self, name, value, scene, index):
+class BPMDataObject(AbstractDataObject):
+    def __init__(self, name, value, index):
         self.name = name
         self.value = value
-        self.scene = scene
-        self.interval = get_interval(scene, name)
+        self.index = index
+
+    def text(self):
+        v = self.pad_to_length(str(self.value), 3)
+        return v, self.name
+
+    def change_state(self, amnt):
+        if 0 < (self.value + amnt) <= 350:
+            self.value += amnt
+            update_value = self.value
+
+            sc_client.set_param("/" + self.name, update_value)
+            if RPI_CONTROLLER:
+                render_param_change(self.pad_to_length(str(self.value), 3), self.index)
+            render_gui(to_rpi = False)
+
+
+class PatternDataObject(AbstractDataObject):
+    def __init__(self, name, value, scene_name, index):
+        super()
+        self.name = name
+        self.value = value
+        self.scene_name = scene_name
+        self.interval = get_interval(value_intervals, scene_name, name)
         self.index = index
 
     def text(self):
         v = str(self.value)
         if len(v) < 3:
             v = "{:>3}".format(v)
-        return v, short_names[self.scene][self.name]
+        return v, short_names[self.scene_name][self.name]
 
     def change_state(self, amnt):
         update_value = None
@@ -102,22 +169,12 @@ class DataObject:
         if update_value is not None:
             sc_client.set_param("/" + self.name + "_" + current_track, update_value)
             if RPI_CONTROLLER:
-                render_param_change(self.pad_to_length(str(self.value)), self.index)
+                render_param_change(self.pad_to_length(str(self.value), 3), self.index)
             render_gui(to_rpi = False)
 
     def get_interval_value(self):
         return self.interval[0] + (self.interval[1]-self.interval[0])*float(self.value)/100+0.000001
 
-    def pad_to_length(self, v):
-        if len(v) < 3:
-            v = "{:>3}".format(v)
-        return v
-
-    def get_value(self):
-        if self.interval is None:
-            return self.value
-        else:
-            return self.interval[0] + (self.interval[1]-self.interval[0])*float(self.value)/100 + 0.0001
 
 
 class ViewModel:
@@ -177,7 +234,7 @@ def change_scene_to(scn):
     # lcd cleanup
     if RPI_CONTROLLER:
         print(current_scene_idx, scn,len(scenes))
-        lcd_screen.cleanup()#len(scenes[current_scene_idx].data), len(scenes[scn].data))
+        lcd_screen.cleanup()
     current_scene_idx = scn
     bind_encoders()
     render_gui()
@@ -210,10 +267,10 @@ def bind_encoders():
 
 
 patterns = read_patterns()
-scenes = create_scenes(patterns[0].data["track_data"])
+scenes = create_scenes(patterns[0]["track_data"])
 view_model = ViewModel(scenes)
 encoders = [Encoder(view_model), Encoder(view_model), Encoder(view_model), Encoder(view_model), Encoder(view_model), Encoder(view_model), Encoder(view_model), Encoder(view_model)]
-sc_client.load_pattern(patterns[0].data)
+sc_client.load_pattern(patterns[0], value_intervals)
 
 if RPI_CONTROLLER:
     rpi_encoders = [GPIOZeroEncoder(17, 4, encoders[0]),
