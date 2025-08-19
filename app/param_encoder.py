@@ -1,11 +1,9 @@
 class Encoder:
-	def __init__(self, view_model):
-		self.section = None
-		self.param = None
-		self.view_model = view_model
+	def __init__(self, data_object=None):
+		self.data_object = data_object
 		
 	def state_change(self, change):
-		if self.param is not None and self.section is not None:
-			self.view_model.change_state(self.param, change)
+		if self.data_object is not None:
+			self.data_object.change_state(change)
 		else:
 			print("Warning! Unbound encoder!")

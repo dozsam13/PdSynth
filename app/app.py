@@ -54,34 +54,21 @@ class ButtonModel:
 button_model = ButtonModel()
 
 class Scene:
-    def __init__(self, name, data):
-        self.name = name
-        self.data = {(i,(k,v)) : PatternDataObject(k, v, name, i) for i, (k, v) in enumerate(data.items())}
-
-    def text(self):
-        result = [[], []]
-        for k, d_obj in self.data.items():
-            value, value_text = d_obj.text()
-            result[0].append(value)
-            result[1].append(value_text)
-        values = " ".join(result[0])
-        texts = " ".join(result[1])
-
-        final_text = [values[:16], texts[:16], values[16:], texts[16:]]
-
-        return final_text
-
-class GlobalScene:
-    def __init__(self, data_objects):
+    def __init__(self, name, data_objects):
         self.data_objects = data_objects
+        self.name = name
 
     def text(self):
         result = [[], [], [], []]
-        for i, data_obj_row in enumerate(data_objects):
-            for data_obj in data_obj_row:
-                value, label = data_obj.text()
-                result[i*2].append(value)
-                result[i*2+1].append(label)
+        for i, data_object in enumerate(self.data_objects):
+            value, label = data_object.text()
+            if value != "":
+                result[i//4*2].append(value)
+                result[i//4*2+1].append(label)
+        
+        for i in range(len(result)):
+            result[i] = " ".join(result[i])
+
         return result
 
 class AbstractDataObject:
@@ -95,9 +82,15 @@ class AbstractDataObject:
         pass
 
     def pad_to_length(self, v, n):
-        if len(v) < n:
-            v = "{:>n}".format(v)
-        return v
+        return v.rjust(n)
+
+    def render(self, value, index):
+        if RPI_CONTROLLER:
+            render_param_change(render_param_changevalue, index)
+        render_gui(to_rpi = False)
+
+
+dummy_data_object = AbstractDataObject()
 
 class PatternNameDataObject(AbstractDataObject):
     def __init__(self, patterns, sc_client, current_pattern_index, index):
@@ -106,29 +99,29 @@ class PatternNameDataObject(AbstractDataObject):
         self.patterns = patterns
         self.current_pattern_index = current_pattern_index
         self.index = index
+        self.current_pattern_name = patterns[current_pattern_index]["Global"]["Name"]
+        self.scenes = None
 
     def text(self):
-        return self.patterns[self.current_pattern_index]["Global"]["Name"], "pattern"
+        return self.current_pattern_name.ljust(11), "pattern".ljust(11)
 
     def change_state(self, amnt):
         self.current_pattern_index += amnt
         self.current_pattern_index %= len(self.patterns)
+        self.current_pattern_name = self.patterns[self.current_pattern_index]["Global"]["Name"]
+        self.sc_client.load_pattern(None, value_intervals)
 
-        #self.sc_client.load_pattern(None, value_intervals)
-        if RPI_CONTROLLER:
-            render_param_change(self.pad_to_length(str(self.value), 11), self.index)
-        render_gui(to_rpi = False)
-
+        self.render(self.current_pattern_name.ljust(11), self.index)
+        
 
 class BPMDataObject(AbstractDataObject):
-    def __init__(self, name, value, index):
-        self.name = name
+    def __init__(self, value, index):
         self.value = value
         self.index = index
 
     def text(self):
-        v = self.pad_to_length(str(self.value), 3)
-        return v, self.name
+        v = str(self.value).rjust(3)
+        return v, "bpm"
 
     def change_state(self, amnt):
         if 0 < (self.value + amnt) <= 350:
@@ -136,9 +129,7 @@ class BPMDataObject(AbstractDataObject):
             update_value = self.value
 
             sc_client.set_param("/" + self.name, update_value)
-            if RPI_CONTROLLER:
-                render_param_change(self.pad_to_length(str(self.value), 3), self.index)
-            render_gui(to_rpi = False)
+            self.render(str(self.value).rjust(3), self.index)
 
 
 class PatternDataObject(AbstractDataObject):
@@ -168,31 +159,30 @@ class PatternDataObject(AbstractDataObject):
                 update_value = self.get_interval_value()
         if update_value is not None:
             sc_client.set_param("/" + self.name + "_" + current_track, update_value)
-            if RPI_CONTROLLER:
-                render_param_change(self.pad_to_length(str(self.value), 3), self.index)
-            render_gui(to_rpi = False)
+            self.render(str(self.value).rjust(3), self.index)
 
     def get_interval_value(self):
         return self.interval[0] + (self.interval[1]-self.interval[0])*float(self.value)/100+0.000001
 
 
+def create_global_scene(patterns, current_pattern_index):
+    pattern_name_data_object = PatternNameDataObject(patterns, sc_client, current_pattern_index, 0)
+    bpm_data_object = BPMDataObject(patterns[current_pattern_index]["Global"]["bpm"], 4)
+    global_data_objects = [pattern_name_data_object, dummy_data_object, dummy_data_object, dummy_data_object, bpm_data_object]
+    global_scene = Scene("Global", global_data_objects)
+    return global_scene
 
-class ViewModel:
-    def __init__(self, scenes):
-        self.scenes = scenes
-
-    def change_state(self, param, amnt):
-        self.scenes[current_track][current_scene_idx].data[param].change_state(amnt)
-
-
-
-def create_scenes(ptn):
+def create_scenes(patterns, current_pattern_index):
     result = {}
-    for trk_id, pattern in ptn.items():
-        scenes = []
-        for scene_name, scene_data in pattern.items():
-            if scene_name not in {"Name", "Sequence", "Mute"}:
-                scenes.append(Scene(scene_name, scene_data))
+    global_scene = create_global_scene(patterns, current_pattern_index)
+    for trk_id, scenes_data in patterns[current_pattern_index]["track_data"].items():
+        scenes = [global_scene]
+        for scene_name, scene_data in scenes_data.items():
+            if scene_name not in {"Sequence", "Mute"}:
+                data_objects = []
+                for i, (label, value) in enumerate(scene_data.items()):
+                    data_objects.append(PatternDataObject(label, value, scene_name, i))
+                scenes.append(Scene(scene_name, data_objects))
         result[trk_id] = scenes
     return result
 
@@ -251,8 +241,7 @@ def change_scene(amnt):
 
 def unbind_encoders():
     for i, encoder in enumerate(encoders):
-        encoder.section = None
-        encoder.param = None
+        encoder.data_object = None
 
 
 def bind_encoders():
@@ -260,16 +249,14 @@ def bind_encoders():
     global scenes
     global encoders
     global current_track
-    l = min([len(encoders), len(list(scenes[current_track][current_scene_idx].data.items()))])
+    l = min([len(encoders), len(list(scenes[current_track][current_scene_idx].data_objects))])
     for i in range(l):
-        encoders[i].section = scenes[current_track][current_scene_idx].name
-        encoders[i].param = list(scenes[current_track][current_scene_idx].data.items())[i][0]
+        encoders[i].data_object = scenes[current_track][current_scene_idx].data_objects[i]
 
 
 patterns = read_patterns()
-scenes = create_scenes(patterns[0]["track_data"])
-view_model = ViewModel(scenes)
-encoders = [Encoder(view_model), Encoder(view_model), Encoder(view_model), Encoder(view_model), Encoder(view_model), Encoder(view_model), Encoder(view_model), Encoder(view_model)]
+scenes = create_scenes(patterns, current_pattern_index=0)
+encoders = [Encoder(), Encoder(), Encoder(), Encoder(), Encoder(), Encoder(), Encoder(), Encoder()]
 sc_client.load_pattern(patterns[0], value_intervals)
 
 if RPI_CONTROLLER:
@@ -312,10 +299,10 @@ keyboard.add_hotkey('i', lambda: encoders[3].state_change(1))
 
 
 def seq_pressed(idx):
-    patterns[0].data["track_data"][current_track]["Sequence"]["freq"][idx] = int(not patterns[0].data["track_data"][current_track]["Sequence"]["freq"][idx])
+    patterns[0]["track_data"][current_track]["Sequence"]["freq"][idx] = int(not patterns[0]["track_data"][current_track]["Sequence"]["freq"][idx])
 
-    print(patterns[0].data["track_data"][current_track]["Sequence"]["freq"])
-    sc_client.set_param("/freq_" + current_track, list(map(lambda x: x if x==1 else "", patterns[0].data["track_data"][current_track]["Sequence"]["freq"])))
+    print(patterns[0]["track_data"][current_track]["Sequence"]["freq"])
+    sc_client.set_param("/freq_" + current_track, list(map(lambda x: x if x==1 else "", patterns[0]["track_data"][current_track]["Sequence"]["freq"])))
 
 ## bind sequencer keyboard keys
 def on_seq_press(event):

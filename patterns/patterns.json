@@ -72,5 +72,79 @@
                 "Mute": 1
             }            
         }
+    },
+    {
+        "Global":
+        {
+            "Name": "test_pattern_2",
+            "bpm": 160
+        },
+        "track_data":
+        {
+            "1":
+            {
+                "Home":
+                {
+                    "amp": 15,
+                    "bufnum": 23,
+                    "rate": 1
+                },
+                "Amp":
+                {
+                    "start_pos": 0,
+                    "attack": 0,
+                    "release": 100
+                },
+                "Filter":
+                {
+                    "cutoff": 100,
+                    "resonance": 0
+                },
+                "Effect":
+                {
+                    "distortion_amp": 0,
+                    "distortion_smooth": 0,
+                    "reverb_send": 0,
+                    "delay_send": 0
+                },
+                "Sequence":
+                {
+                    "freq": [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0]
+                },
+                "Mute": 1
+            },
+            "2":
+            {
+                "Home":
+                {
+                    "amp": 10,
+                    "bufnum": 42,
+                    "rate": 1   
+                },
+                "Amp":
+                {
+                    "start_pos": 0,
+                    "attack": 0,
+                    "release": 100
+                },
+                "Filter":
+                {
+                    "cutoff": 100,
+                    "resonance": 0
+                },
+                "Effect":
+                {
+                    "distortion_amp": 0,
+                    "distortion_smooth": 0,
+                    "reverb_send": 0,
+                    "delay_send": 0
+                },
+                "Sequence":
+                {
+                    "freq": [0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0]
+                },
+                "Mute": 1
+            }            
+        }
     }
 ]
