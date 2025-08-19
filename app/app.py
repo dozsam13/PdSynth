@@ -1,12 +1,12 @@
 import json
 from pattern import Pattern
-from my_encoder import Encoder
+from param_encoder import Encoder
 from client.sc_client import SuperColliderClient
 import keyboard
 import time
 from enum import Enum
 import argparse
-from helper import get_interval
+from helper import get_interval, preprocess_button_map_config
 from sshkeyboard import listen_keyboard
 
 parser = argparse.ArgumentParser()
@@ -19,71 +19,15 @@ RPI_CONTROLLER = args.rpi
 
 sc_client = SuperColliderClient()
 if RPI_CONTROLLER:
-    from my_lcd_screen import LCDScreen
+    from lcd_screen import LCDScreen
     from encoder import GPIOZeroEncoder
     from gpiozero import Button
     import RPi.GPIO as GPIO
 
-short_names = {
-    "Home":
-    {
-        "amp": "amp",
-        "bufnum": "buf",
-        "rate": "rte",
-    },
-    "Amp":
-    {
-        "start_pos": "sps",
-        "attack": "atk",
-        "sustain": "stn",
-        "release": "rls"
-    },
-    "Filter":
-    {
-        "cutoff": "ctf",
-        "resonance": "res"
-    },
-    "Effect":
-    {
-        "distortion_amp": "dam",
-        "distortion_smooth": "dsm",
-        "reverb_send": "rvs",
-        "delay_send": "dls"
-    }
-}
-
-button_map = {
-    "left_extender": {
-        4: 0,
-        1: 1,
-        3: 2,
-        5: 3,
-        0: 8,
-        2: 9,
-        6: 10,
-        7: 11
-    },
-    "right_extender": {
-        7: 4,
-        3: 5,
-        1: 6,
-        4: 7,
-        5: 12,
-        6: 13,
-        2: 14,
-        0: 15
-    },
-    "menu_extender": {
-    	4: 0,
-    	0: 1,
-    	1: 2,
-    	2: 3,
-    	3: 4,
-    	7: None, #mute
-    	6: None  #func
-    }
-}
-
+with open('app/config.json', 'r') as file:
+    config = json.load(file)
+short_names = config["short_names"]
+button_map = preprocess_button_map_config(config)
 
 current_track = "1"
 current_scene_idx = 0
@@ -142,7 +86,7 @@ class DataObject:
     def text(self):
         v = str(self.value)
         if len(v) < 3:
-            v = "{:<3}".format(v)
+            v = "{:>3}".format(v)
         return v, short_names[self.scene][self.name]
 
     def change_state(self, amnt):
@@ -154,14 +98,21 @@ class DataObject:
         else:
             if 0 <= (self.value + amnt) <= 100:
                 self.value += amnt
-                update_value = self.interval[0] + (self.interval[1]-self.interval[0])*float(self.value)/100+0.000001
-                #print(self.scene, self.name, self.value, update_value)
+                update_value = self.get_interval_value()
         if update_value is not None:
             sc_client.set_param("/" + self.name + "_" + current_track, update_value)
             if RPI_CONTROLLER:
-                render_param_change(str(self.value), self.index)
+                render_param_change(self.pad_to_length(str(self.value)), self.index)
             render_gui(to_rpi = False)
-    
+
+    def get_interval_value(self):
+        return self.interval[0] + (self.interval[1]-self.interval[0])*float(self.value)/100+0.000001
+
+    def pad_to_length(self, v):
+        if len(v) < 3:
+            v = "{:>3}".format(v)
+        return v
+
     def get_value(self):
         if self.interval is None:
             return self.value
@@ -183,7 +134,7 @@ def create_scenes(ptn):
     for trk_id, pattern in ptn.items():
         scenes = []
         for scene_name, scene_data in pattern.items():
-            if scene_name not in {"Name", "Sequence"}:
+            if scene_name not in {"Name", "Sequence", "Mute"}:
                 scenes.append(Scene(scene_name, scene_data))
         result[trk_id] = scenes
     return result
@@ -204,8 +155,14 @@ def render_gui(to_rpi=True):
 def render_param_change(value, index):
     row = index // 4
     column = index % 4
+
+
     lcd_screen.write_param_value(row, column, value)
 
+def mute_track(trk):
+    v = int(not patterns[0].data["track_data"][str(trk)]["Mute"])
+    patterns[0].data["track_data"][str(trk)]["Mute"] = v
+    sc_client.mute_track(trk, v)
 
 def change_track(trk):
     global current_track
@@ -226,8 +183,6 @@ def change_scene_to(scn):
     render_gui()
     
 
-
-
 def change_scene(amnt):
     global current_scene_idx
     global current_track
@@ -242,6 +197,7 @@ def unbind_encoders():
         encoder.section = None
         encoder.param = None
 
+
 def bind_encoders():
     global current_scene_idx
     global scenes
@@ -251,7 +207,6 @@ def bind_encoders():
     for i in range(l):
         encoders[i].section = scenes[current_track][current_scene_idx].name
         encoders[i].param = list(scenes[current_track][current_scene_idx].data.items())[i][0]
-
 
 
 patterns = read_patterns()
@@ -276,7 +231,7 @@ def seq_start_stop():
     if not seq_running:
         print("starting sequencer")
         sc_client.start_sequencer()
-    else :
+    else:
         sc_client.stop_sequencer()
         print("stopping sequencer")
     seq_running = not seq_running
@@ -301,7 +256,8 @@ keyboard.add_hotkey('i', lambda: encoders[3].state_change(1))
 
 def seq_pressed(idx):
     patterns[0].data["track_data"][current_track]["Sequence"]["freq"][idx] = int(not patterns[0].data["track_data"][current_track]["Sequence"]["freq"][idx])
-    print(patterns[0].data[current_track]["Sequence"]["freq"])
+
+    print(patterns[0].data["track_data"][current_track]["Sequence"]["freq"])
     sc_client.set_param("/freq_" + current_track, list(map(lambda x: x if x==1 else "", patterns[0].data["track_data"][current_track]["Sequence"]["freq"])))
 
 ## bind sequencer keyboard keys
@@ -351,6 +307,7 @@ def keep_only_zeros(diff_indexes, extender_bin):
 
 def button_pressed_callback(a):
     global interrupt_counter
+    global current_track
     interrupt_counter += 1
     
     print("INTERRUPT RECEIVED", flush=True)
@@ -364,21 +321,14 @@ def button_pressed_callback(a):
     l_ext_diffs = keep_only_zeros(find_differences(button_model.l_extender, l_extender_bin), l_extender_bin)
     r_ext_diffs = keep_only_zeros(find_differences(button_model.r_extender, r_extender_bin), r_extender_bin)
     menu_ext_diffs = keep_only_zeros(find_differences(button_model.menu_extender, menu_extender_bin), menu_extender_bin)
-    for dif in l_ext_diffs:
-    	if menu_extender_bin[7] == "0":
-    		print("muting track: ", button_map["left_extender"][dif] + 1)
-    	elif menu_extender_bin[6] == "0":
-    		change_track(button_map["left_extender"][dif] + 1)
-    	else:
-    		seq_pressed(button_map["left_extender"][dif])
-
-    for dif in r_ext_diffs:
-    	if menu_extender_bin[7] == "0":
-    		print("muting track: ", button_map["right_extender"][dif] + 1)
-    	elif menu_extender_bin[6] == "0":
-    		change_track(button_map["right_extender"][dif] + 1)
-    	else:
-    		seq_pressed(button_map["right_extender"][dif])
+    for (extender_name, diffs) in [("left_extender", l_ext_diffs), ("right_extender", r_ext_diffs)]:
+        for dif in diffs:
+            if menu_extender_bin[7] == "0":
+                mute_track(button_map[extender_name][dif] + 1)
+            elif menu_extender_bin[6] == "0":
+                change_track(button_map[extender_name][dif] + 1)
+            else:
+                seq_pressed(button_map[extender_name][dif])
 
     for dif in menu_ext_diffs:
     	if dif < 5:
@@ -397,6 +347,6 @@ if RPI_CONTROLLER:
     button1 = Button(21)
     button1.when_pressed = button_pressed_callback
 
-#seq_start_stop()
+
 while True:
     time.sleep(1)

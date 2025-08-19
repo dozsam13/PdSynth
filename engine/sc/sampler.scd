@@ -1,6 +1,9 @@
 s.boot;
+s.latency = nil;
 //s.reboot;
 //s.freeAll;
+//jackd -R -d alsa -d hw:3 -p64
+//midisnoop
 
 s.doWhenBooted({
 
@@ -8,10 +11,16 @@ s.doWhenBooted({
 
 MIDIClient.init;
 MIDIIn.connect(0, MIDIClient.sources.detectIndex{|src| src.device.contains("USB")});
+
+
 //MIDISyncClock.init;
 
-//MIDISyncClock.tempo;
+~midiOutIndex = MIDIClient.destinations.detectIndex{|src| src.device.contains("USB")};
+~midiOut = MIDIOut(~midiOutIndex, MIDIClient.destinations[~midiOutIndex].uid); // .latency_(Server.default.latency);
 
+MIDISyncClock.init;
+
+//MIDISyncClock.tempo;
 
 
 
@@ -48,8 +57,13 @@ SynthDef.new(\sampy, {
 
 (
 t = TempoClock.new(200/60).permanent_(true);
-~postBeat = {t.beats.postln;1;};
-t.schedAbs(t.nextBar, {~postBear.value});
+
+~sendMidiClock = { |beat|
+    ~midiOut.midiClock;
+    t.schedAbs(beat + (1/24);, ~sendMidiClock);
+};
+
+t.schedAbs(t.beats.ceil, ~sendMidiClock);
 );
 
 (
@@ -153,7 +167,6 @@ t.schedAbs(t.nextBar, {~postBear.value});
 		~paramDict[("freq_" ++ track_id).asSymbol] = Pseq(seq, 1);
 	}, "/freq_" ++ track_id);
 
-
 	// Create Pattern for track
 	Pbind(
 		\instrument, \sampy,
@@ -181,17 +194,20 @@ t.schedAbs(t.nextBar, {~postBear.value});
 
 (
 OSCdef(\start_seq, { |msg|
+	"starting sequencer".postln;
 	~players = ~patterns.collect({ |ptn|
 		ptn.play(t)
 		//ptn.play(MIDISyncClock)
 	});
-
+	~midiOut.start;
 }, "/start_seq");
 
 OSCdef(\stop_seq, { |msg|
+	"stopping sequencer".postln;
 	~players.do({ |player|
 		player.stop;
 	});
+	~midiOut.stop;
 }, "/stop_seq");
 
 ~startFunc = MIDIFunc.start({ |val|

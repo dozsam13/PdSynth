@@ -94,3 +94,11 @@ short_names = {
         "delay_send": "dls"
     }
 }
+
+def preprocess_button_map_config(config):
+    button_map = {}
+    for k in config["button_map"].keys():
+        button_map[k] = {}
+        for e in config["button_map"][k]:
+            button_map[k][int(e)] = config["button_map"][k][e]
+    return button_map
