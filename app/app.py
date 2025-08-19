@@ -192,7 +192,7 @@ def render_gui(to_rpi=True):
     t = scenes[current_track][current_scene_idx].text()
     t2 = []
     for e in t:
-        t2.append(e)#.ljust(20))
+        t2.append(e)
     if RPI_CONTROLLER and to_rpi:
         print("write lines")
         lcd_screen.write_lines(t2)
@@ -397,6 +397,6 @@ if RPI_CONTROLLER:
     button1 = Button(21)
     button1.when_pressed = button_pressed_callback
 
-seq_start_stop()
+#seq_start_stop()
 while True:
     time.sleep(1)

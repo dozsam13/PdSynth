@@ -8,9 +8,9 @@ s.doWhenBooted({
 
 MIDIClient.init;
 MIDIIn.connect(0, MIDIClient.sources.detectIndex{|src| src.device.contains("USB")});
-MIDISyncClock.init;
+//MIDISyncClock.init;
 
-MIDISyncClock.tempo;
+//MIDISyncClock.tempo;
 
 
 
@@ -37,7 +37,7 @@ SynthDef.new(\sampy, {
 		doneAction: 2
 	);
 	//sig = GlitchBPF..ar(in: sig, freq: 440.0, rq: 1.0, mul: 1.0, add: 0.0);
-	sig = CrossoverDistortion.ar(sig, amp: \distortion_amp.kr(0.5), smooth: \distortion_smooth.kr(0.5), mul: 1.0, add: 0);
+	//sig = CrossoverDistortion.ar(sig, amp: \distortion_amp.kr(0.5), smooth: \distortion_smooth.kr(0.5), mul: 1.0, add: 0);
 	sig = RLPF.ar(in: sig, freq: \cutoff.kr(2200.0), rq: \resonance.kr(0.01), mul: 1.0, add: 0.0);
 	sig = env*sig*\mute.kr(1);
 	Out.ar(\out.kr(0), sig*\amp.kr(1));
@@ -182,8 +182,8 @@ t.schedAbs(t.nextBar, {~postBear.value});
 (
 OSCdef(\start_seq, { |msg|
 	~players = ~patterns.collect({ |ptn|
-		//ptn.play(t)
-		ptn.play(MIDISyncClock)
+		ptn.play(t)
+		//ptn.play(MIDISyncClock)
 	});
 
 }, "/start_seq");
@@ -197,8 +197,8 @@ OSCdef(\stop_seq, { |msg|
 ~startFunc = MIDIFunc.start({ |val|
     "MIDI START received".postln;
     ~players = ~patterns.collect({ |ptn|
-		//ptn.play(t)
-		ptn.play(MIDISyncClock)
+		ptn.play(t)
+		//ptn.play(MIDISyncClock)
 	});
 });
 
