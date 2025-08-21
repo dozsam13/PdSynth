@@ -2,3 +2,5 @@ projects
 venv
 samples
 __pycache__/
+patterns/patterns.json
+
