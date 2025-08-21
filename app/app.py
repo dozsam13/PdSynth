@@ -62,7 +62,7 @@ class Scene:
         result = [[], [], [], []]
         for i, data_object in enumerate(self.data_objects):
             value, label = data_object.text()
-            if value != "":
+            if value is not None and label is not None:
                 result[i//4*2].append(value)
                 result[i//4*2+1].append(label)
         
@@ -76,7 +76,7 @@ class AbstractDataObject:
         pass
 
     def text(self):
-        return "", ""
+        return None, None
 
     def change_state(self, amnt):
         pass
@@ -93,7 +93,7 @@ class AbstractDataObject:
 dummy_data_object = AbstractDataObject()
 
 class PatternNameDataObject(AbstractDataObject):
-    def __init__(self, patterns, sc_client, current_pattern_index, index):
+    def __init__(self, patterns, sc_client, current_pattern_index, index, load_pattern_to_ui):
         super()
         self.sc_client = sc_client
         self.patterns = patterns
@@ -101,6 +101,7 @@ class PatternNameDataObject(AbstractDataObject):
         self.index = index
         self.current_pattern_name = patterns[current_pattern_index]["Global"]["Name"]
         self.scenes = None
+        self.load_pattern_to_ui = load_pattern_to_ui
 
     def text(self):
         return self.current_pattern_name.ljust(11), "pattern".ljust(11)
@@ -109,9 +110,10 @@ class PatternNameDataObject(AbstractDataObject):
         self.current_pattern_index += amnt
         self.current_pattern_index %= len(self.patterns)
         self.current_pattern_name = self.patterns[self.current_pattern_index]["Global"]["Name"]
-        self.sc_client.load_pattern(None, value_intervals)
-
-        self.render(self.current_pattern_name.ljust(11), self.index)
+        # load new pattern to SC
+        self.sc_client.load_pattern(self.patterns[self.current_pattern_index], value_intervals)
+        # load new params to app
+        self.load_pattern_to_ui(self.current_pattern_index)
         
 
 class BPMDataObject(AbstractDataObject):
@@ -164,9 +166,16 @@ class PatternDataObject(AbstractDataObject):
     def get_interval_value(self):
         return self.interval[0] + (self.interval[1]-self.interval[0])*float(self.value)/100+0.000001
 
+def load_pattern_to_ui(pattern_index):
+    global scenes
+    scenes = create_scenes(patterns, pattern_index)
+    unbind_encoders()
+    bind_encoders()
+    render_gui()
 
 def create_global_scene(patterns, current_pattern_index):
-    pattern_name_data_object = PatternNameDataObject(patterns, sc_client, current_pattern_index, 0)
+    l_p_t_ui = lambda x: load_pattern_to_ui(x)
+    pattern_name_data_object = PatternNameDataObject(patterns, sc_client, current_pattern_index, 0, l_p_t_ui)
     bpm_data_object = BPMDataObject(patterns[current_pattern_index]["Global"]["bpm"], 4)
     global_data_objects = [pattern_name_data_object, dummy_data_object, dummy_data_object, dummy_data_object, bpm_data_object]
     global_scene = Scene("Global", global_data_objects)
