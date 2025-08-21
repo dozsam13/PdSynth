@@ -13,11 +13,14 @@ parser.add_argument('--rpi', action='store_true', default=False,
                     help='Use RaspberryPI hardware')
 parser.add_argument('--cli', action='store_true', default=False, 
                     help='Use command line interface')
+parser.add_argument('--pattern_path', default="patterns/test_patterns.json", 
+                    help='Path to saved pattern files')
 args = parser.parse_args()
 
 
 RPI_CONTROLLER = args.rpi
 COMMAND_LINE_INTERFACE = args.cli
+PATTERN_PATH = args.pattern_path
 
 if RPI_CONTROLLER:
     from lcd_screen import LCDScreen
@@ -41,7 +44,7 @@ if RPI_CONTROLLER:
     lcd_screen = LCDScreen()
 
 def read_patterns():
-    with open('patterns/patterns.json', 'r') as file:
+    with open(PATTERN_PATH, 'r') as file:
         data = json.load(file)
     return data
 
@@ -89,6 +92,9 @@ class AbstractDataObject:
             render_param_change(render_param_changevalue, index)
         render_gui(to_rpi = False)
 
+    def is_saveable():
+        return True
+
 
 dummy_data_object = AbstractDataObject()
 
@@ -115,9 +121,13 @@ class PatternNameDataObject(AbstractDataObject):
         # load new params to app
         self.load_pattern_to_ui(self.current_pattern_index)
         
+    def write_value_to_pattern(self, pattern):
+        pattern["Global"]["Name"] = self.current_pattern_name
+
 
 class BPMDataObject(AbstractDataObject):
     def __init__(self, value, index):
+        super()
         self.value = value
         self.index = index
 
@@ -133,15 +143,19 @@ class BPMDataObject(AbstractDataObject):
             sc_client.set_param("/" + self.name, update_value)
             self.render(str(self.value).rjust(3), self.index)
 
+    def write_value_to_pattern(self, pattern):
+        pattern["Global"]["bpm"] = self.value
+
 
 class PatternDataObject(AbstractDataObject):
-    def __init__(self, name, value, scene_name, index):
+    def __init__(self, name, value, scene_name, index, track_id):
         super()
         self.name = name
         self.value = value
         self.scene_name = scene_name
         self.interval = get_interval(value_intervals, scene_name, name)
         self.index = index
+        self.track_id = track_id
 
     def text(self):
         v = str(self.value)
@@ -165,6 +179,10 @@ class PatternDataObject(AbstractDataObject):
 
     def get_interval_value(self):
         return self.interval[0] + (self.interval[1]-self.interval[0])*float(self.value)/100+0.000001
+
+    def write_value_to_pattern(self, pattern):
+        pattern["track_data"][self.track_id][self.scene_name][self.name] = self.value
+
 
 def load_pattern_to_ui(pattern_index):
     global scenes
@@ -238,6 +256,12 @@ def change_scene_to(scn):
     bind_encoders()
     render_gui()
     
+def save_current_pattern():
+    for scene in scenes:
+        for data_object in scene.data_objects:
+            if data_object.is_saveable():
+                data_object.write_value_to_pattern(patterns[current_pattern_index])
+
 
 def change_scene(amnt):
     global current_scene_idx
