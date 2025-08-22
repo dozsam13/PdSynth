@@ -208,7 +208,7 @@ def create_scenes(patterns, current_pattern_index):
             if scene_name not in {"Sequence", "Mute"}:
                 data_objects = []
                 for i, (label, value) in enumerate(scene_data.items()):
-                    data_objects.append(PatternDataObject(label, value, scene_name, i))
+                    data_objects.append(PatternDataObject(label, value, scene_name, i, trk_id))
                 scenes.append(Scene(scene_name, data_objects))
         result[trk_id] = scenes
     return result

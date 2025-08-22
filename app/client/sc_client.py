@@ -66,6 +66,7 @@ class SuperColliderClient:
 							self.set_param("/freq_" + track_id, list(map(lambda x: x if x==1 else "", track_data[track_id]["Sequence"]["freq"])))
 				else:
 					self.mute_track(track_id, track_data[track_id][scene_name])
+		self.set_bpm(pattern["Global"]["bpm"])
 
 
 if __name__=="__main__":

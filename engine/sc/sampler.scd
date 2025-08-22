@@ -18,6 +18,7 @@ MIDIIn.connect(0, MIDIClient.sources.detectIndex{|src| src.device.contains("USB"
 ~midiOutIndex = MIDIClient.destinations.detectIndex{|src| src.device.contains("USB")};
 ~midiOut = MIDIOut(~midiOutIndex, MIDIClient.destinations[~midiOutIndex].uid); // .latency_(Server.default.latency);
 
+~midiOut.latency=0.015;
 MIDISyncClock.init;
 
 //MIDISyncClock.tempo;
@@ -46,7 +47,7 @@ SynthDef.new(\sampy, {
 		doneAction: 2
 	);
 	//sig = GlitchBPF..ar(in: sig, freq: 440.0, rq: 1.0, mul: 1.0, add: 0.0);
-	//sig = CrossoverDistortion.ar(sig, amp: \distortion_amp.kr(0.5), smooth: \distortion_smooth.kr(0.5), mul: 1.0, add: 0);
+	sig = CrossoverDistortion.ar(sig, amp: \distortion_amp.kr(0.5), smooth: \distortion_smooth.kr(0.5), mul: 1.0, add: 0);
 	sig = RLPF.ar(in: sig, freq: \cutoff.kr(2200.0), rq: \resonance.kr(0.01), mul: 1.0, add: 0.0);
 	sig = env*sig*\mute.kr(1);
 	Out.ar(\out.kr(0), sig*\amp.kr(1));
@@ -58,13 +59,17 @@ SynthDef.new(\sampy, {
 (
 t = TempoClock.new(200/60).permanent_(true);
 
+
 ~sendMidiClock = { |beat|
     ~midiOut.midiClock;
     t.schedAbs(beat + (1/24);, ~sendMidiClock);
 };
 
 t.schedAbs(t.beats.ceil, ~sendMidiClock);
+
+
 );
+
 
 (
 ~track_ids = [1, 2];
@@ -192,6 +197,19 @@ t.schedAbs(t.beats.ceil, ~sendMidiClock);
 	);
 });
 
+/*
+~midiPbind =
+	Pbind(
+		\type, \midi,
+		\midicmd, \noteOn,
+		\midiout, ~midiOut,
+		\chan, 2,
+		\degree, Pwhite(-7, 12),
+		\dur, 1,
+		\amp, 0.7,
+	);
+~patterns.add(~midiPbind);
+*/
 (
 OSCdef(\start_seq, { |msg|
 	"starting sequencer".postln;
